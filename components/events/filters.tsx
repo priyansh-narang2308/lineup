@@ -163,9 +163,11 @@ function DayTabs({
 export function ViewSwitch({
   view,
   onView,
+  compact,
 }: {
   view: View;
   onView: (v: View) => void;
+  compact?: boolean;
 }) {
   return (
     <div role="radiogroup" aria-label="View" className={seg}>
@@ -181,13 +183,15 @@ export function ViewSwitch({
           role="radio"
           aria-checked={view === v}
           onClick={() => onView(v)}
+          aria-label={compact ? `${label} view` : undefined}
           className={cn(
-            "inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium whitespace-nowrap transition-colors",
+            "inline-flex items-center gap-1.5 rounded-full text-[13px] font-medium whitespace-nowrap transition-colors",
+            compact ? "size-8 justify-center" : "h-8 px-3",
             view === v ? "bg-hover text-fg" : "text-fg-3 hover:text-fg",
           )}
         >
-          <Icon aria-hidden className="size-3.5" />
-          {label}
+          <Icon aria-hidden className={compact ? "size-4" : "size-3.5"} />
+          {!compact && label}
         </button>
       ))}
     </div>
@@ -351,6 +355,9 @@ export function FilterBar({
             </span>
           )}
         </button>
+        <div className="shrink-0 lg:hidden">
+          <ViewSwitch view={view} onView={onView} compact />
+        </div>
       </div>
 
       <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-none [mask-image:linear-gradient(to_right,black_92%,transparent)] lg:[mask-image:none]">
@@ -365,9 +372,6 @@ export function FilterBar({
         </div>
         <div className="ml-auto hidden items-center gap-2.5 lg:flex">
           <SortSelect value={filters.sort} onChange={(sort) => set({ sort })} />
-        </div>
-        <div className="shrink-0 lg:hidden">
-          <ViewSwitch view={view} onView={onView} />
         </div>
       </div>
 

@@ -11,6 +11,8 @@ import {
   weekdayLong,
   weekdayShort,
 } from "@/lib/events/time";
+import { availabilityLabel } from "@/lib/events/format";
+import { formatINR } from "@/lib/events/derive";
 import { cn } from "@/lib/cn";
 
 type Props = {
@@ -28,6 +30,8 @@ type Block = {
   end: number;
   label: string;
   clock: [string, string];
+  /** Agenda rows already show times, so they get a time-free summary. */
+  summary: string;
   part?: string;
   state: "in" | "clash" | "muted" | "default";
   meta: string;
@@ -78,6 +82,13 @@ function blocksForDay(
           : unavailable
             ? "muted"
             : "default",
+      summary: inLineup
+        ? `In lineup${clashes.length ? ` · clashes ${formatDuration(clashes.reduce((t, c) => t + c.minutes, 0))}` : ""}`
+        : clashes.length
+          ? `Clashes ${formatDuration(clashes.reduce((t, c) => t + c.minutes, 0))} with your lineup`
+          : unavailable
+            ? availabilityLabel[availability(e)]
+            : `${e.category} · ${e.price ? formatINR(e.price) : "Free"}`,
       meta: inLineup
         ? `${s.start_time}–${endLabel} · in lineup${clashes.length ? ` · clashes ${formatDuration(clashes.reduce((t, c) => t + c.minutes, 0))}` : ""}`
         : clashes.length
@@ -112,7 +123,7 @@ const metaTone = {
   default: "text-fg-3",
 };
 
-function BlockLabel({ b }: { b: Block }) {
+function BlockLabel({ b, agenda }: { b: Block; agenda?: boolean }) {
   return (
     <span className="min-w-0 flex-1">
       <span
@@ -141,7 +152,7 @@ function BlockLabel({ b }: { b: Block }) {
           metaTone[b.state],
         )}
       >
-        {b.meta}
+        {agenda ? b.summary : b.meta}
       </span>
     </span>
   );
@@ -285,7 +296,7 @@ function DayAgenda({
                   barTone[b.state],
                 )}
               />
-              <BlockLabel b={b} />
+              <BlockLabel b={b} agenda />
             </button>
           </li>
         );
