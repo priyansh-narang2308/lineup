@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import {
-  ArrowUpDown,
   CalendarDays,
   Clock3,
   Cpu,
@@ -13,7 +12,6 @@ import {
   ListFilter,
   Palette,
   Search,
-  Shapes,
   SlidersHorizontal,
   Ticket,
   Users,
@@ -23,28 +21,13 @@ import {
 } from "lucide-react";
 import type { Squad } from "@/lib/events/derive";
 import {
-  DEFAULT_FILTERS,
   activeFilterCount,
   type Filters,
   type Sort,
   type View,
 } from "@/lib/events/filter";
 import { weekdayShort } from "@/lib/events/time";
-import { Sheet } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import {
-  Menu,
-  MenuCheckboxItem,
-  MenuContent,
-  MenuLabel,
-  MenuRadioGroup,
-  MenuRadioItem,
-  MenuSeparator,
-  MenuSub,
-  MenuSubContent,
-  MenuSubTrigger,
-  MenuTrigger,
-} from "@/components/ui/menu";
+import { TriggerButton } from "@/components/ui/trigger-button";
 import { cn } from "@/lib/cn";
 
 type Props = {
@@ -58,7 +41,7 @@ type Props = {
   resultCount: number;
 };
 
-const SQUADS: { v: Squad | null; label: string }[] = [
+export const SQUADS: { v: Squad | null; label: string }[] = [
   { v: null, label: "Any" },
   { v: 1, label: "Solo" },
   { v: 2, label: "2" },
@@ -67,7 +50,7 @@ const SQUADS: { v: Squad | null; label: string }[] = [
   { v: 5, label: "5+" },
 ];
 
-const SORTS: { v: Sort; label: string }[] = [
+export const SORTS: { v: Sort; label: string }[] = [
   { v: "start", label: "Start time" },
   { v: "deadline", label: "Deadline soonest" },
   { v: "price", label: "Lowest price" },
@@ -82,7 +65,7 @@ const segBtn = (on: boolean) =>
     on ? "bg-fg text-on-accent" : "text-fg-2 hover:text-fg",
   );
 
-function Chip({
+export function Chip({
   on,
   onClick,
   children,
@@ -281,7 +264,7 @@ function SearchField({
   );
 }
 
-function FilterChips({
+export function FilterChips({
   filters: f,
   set,
 }: {
@@ -319,120 +302,17 @@ function FilterChips({
   );
 }
 
-const SORT_ICONS: Record<Sort, typeof Clock3> = {
+export const SORT_ICONS: Record<Sort, typeof Clock3> = {
   start: Clock3,
   deadline: Hourglass,
   price: Wallet,
   seats: Armchair,
 };
 
-const squadLabel = (s: Squad | null) =>
+export const squadLabel = (s: Squad | null) =>
   s === null ? "Any size" : s === 1 ? "Solo" : s === 5 ? "5+ people" : `${s} people`;
 
-const dayLabel = (d: string) => `${weekdayShort(d)} ${Number(d.slice(8))}`;
-
-/** Desktop: three quiet dropdowns instead of a wall of chips. */
-function DesktopControls({
-  filters,
-  set,
-  squad,
-  onSquad,
-  days,
-}: {
-  filters: Filters;
-  set: (p: Partial<Filters>) => void;
-  squad: Squad | null;
-  onSquad: (s: Squad | null) => void;
-  days: Props["days"];
-}) {
-  const SortIcon = SORT_ICONS[filters.sort];
-  const filterCount = activeFilterCount({ ...filters, q: "", day: null, sort: "start" }) + (squad ? 1 : 0);
-  return (
-    <div className="flex items-center gap-2.5">
-      <Menu>
-        <MenuTrigger icon={<CalendarDays aria-hidden className="size-4" />} active={filters.day !== null} aria-label="Day">
-          {filters.day ? dayLabel(filters.day) : "All days"}
-        </MenuTrigger>
-        <MenuContent>
-          <MenuLabel>Day</MenuLabel>
-          <MenuRadioGroup value={filters.day ?? "all"} onValueChange={(v) => set({ day: v === "all" ? null : v })}>
-            <MenuRadioItem value="all">All days</MenuRadioItem>
-            {days.map((d) => (
-              <MenuRadioItem key={d.date} value={d.date} hint={`${d.count}`}>
-                {dayLabel(d.date)}
-              </MenuRadioItem>
-            ))}
-          </MenuRadioGroup>
-        </MenuContent>
-      </Menu>
-
-      <Menu>
-        <MenuTrigger icon={<SortIcon aria-hidden className="size-4" />} aria-label={`Sort by ${SORTS.find((x) => x.v === filters.sort)?.label}`}>
-          {SORTS.find((x) => x.v === filters.sort)?.label}
-        </MenuTrigger>
-        <MenuContent>
-          <MenuLabel>Sort by</MenuLabel>
-          <MenuRadioGroup value={filters.sort} onValueChange={(v) => set({ sort: v as Sort })}>
-            {SORTS.map((o) => {
-              const Icon = SORT_ICONS[o.v];
-              return (
-                <MenuRadioItem key={o.v} value={o.v} icon={<Icon aria-hidden className="size-4" />}>
-                  {o.label}
-                </MenuRadioItem>
-              );
-            })}
-          </MenuRadioGroup>
-        </MenuContent>
-      </Menu>
-
-      <Menu>
-        <MenuTrigger icon={<ListFilter aria-hidden className="size-4" />} active={filterCount > 0} badge={filterCount} aria-label={`Filter${filterCount ? `, ${filterCount} active` : ""}`}>
-          Filter
-        </MenuTrigger>
-        <MenuContent className="min-w-[264px]">
-          <MenuSub>
-            <MenuSubTrigger icon={<Users aria-hidden className="size-4" />} value={squadLabel(squad)}>
-              Squad size
-            </MenuSubTrigger>
-            <MenuSubContent>
-              <MenuLabel>Going as</MenuLabel>
-              <MenuRadioGroup value={String(squad ?? "any")} onValueChange={(v) => onSquad(v === "any" ? null : (Number(v) as Squad))}>
-                {SQUADS.map((o) => (
-                  <MenuRadioItem key={o.label} value={String(o.v ?? "any")}>
-                    {o.v === null ? "Any size" : o.label === "Solo" ? "Solo" : `${o.label} people`}
-                  </MenuRadioItem>
-                ))}
-              </MenuRadioGroup>
-              <p className="max-w-[210px] px-2.5 pt-1 pb-2 text-[12px] leading-4 text-fg-3">Hides events your squad can’t enter and splits team fees per person.</p>
-            </MenuSubContent>
-          </MenuSub>
-          <MenuSub>
-            <MenuSubTrigger icon={<Shapes aria-hidden className="size-4" />} value={filters.kind === "all" ? "All" : filters.kind === "technical" ? "Technical" : "Cultural"}>
-              Event type
-            </MenuSubTrigger>
-            <MenuSubContent>
-              <MenuRadioGroup value={filters.kind} onValueChange={(v) => set({ kind: v as Filters["kind"] })}>
-                <MenuRadioItem value="all" icon={<LayoutGrid aria-hidden className="size-4" />}>All types</MenuRadioItem>
-                <MenuRadioItem value="technical" icon={<Cpu aria-hidden className="size-4" />}>Technical</MenuRadioItem>
-                <MenuRadioItem value="cultural" icon={<Palette aria-hidden className="size-4" />}>Cultural</MenuRadioItem>
-              </MenuRadioGroup>
-            </MenuSubContent>
-          </MenuSub>
-          <MenuSeparator />
-          <MenuCheckboxItem checked={filters.openOnly} onCheckedChange={(c) => set({ openOnly: c === true })} icon={<Ticket aria-hidden className="size-4" />}>
-            Open for registration
-          </MenuCheckboxItem>
-          <MenuCheckboxItem checked={filters.free} onCheckedChange={(c) => set({ free: c === true })} icon={<Wallet aria-hidden className="size-4" />}>
-            Free events
-          </MenuCheckboxItem>
-          <MenuCheckboxItem checked={filters.online} onCheckedChange={(c) => set({ online: c === true })} icon={<Globe aria-hidden className="size-4" />}>
-            Online only
-          </MenuCheckboxItem>
-        </MenuContent>
-      </Menu>
-    </div>
-  );
-}
+export const dayLabel = (d: string) => `${weekdayShort(d)} ${Number(d.slice(8))}`;
 
 /** Desktop: one removable chip per active filter, plus Clear. */
 function ActiveChips({
@@ -486,6 +366,38 @@ function ActiveChips({
   );
 }
 
+const LG = "(min-width: 1024px)";
+function useIsDesktop() {
+  return useSyncExternalStore(
+    (cb) => {
+      const m = window.matchMedia(LG);
+      m.addEventListener("change", cb);
+      return () => m.removeEventListener("change", cb);
+    },
+    () => window.matchMedia(LG).matches,
+    () => false,
+  );
+}
+
+/** Server-rendered look-alike of the desktop dropdowns, shown until the menu code loads. */
+function DesktopControlsShell({ filters, squad }: { filters: Filters; squad: Squad | null }) {
+  const SortIcon = SORT_ICONS[filters.sort];
+  const count = activeFilterCount({ ...filters, q: "", day: null, sort: "start" }) + (squad ? 1 : 0);
+  return (
+    <div className="flex items-center gap-2.5" aria-hidden>
+      <TriggerButton tabIndex={-1} icon={<CalendarDays className="size-4" />} active={filters.day !== null}>
+        {filters.day ? dayLabel(filters.day) : "All days"}
+      </TriggerButton>
+      <TriggerButton tabIndex={-1} icon={<SortIcon className="size-4" />}>
+        {SORTS.find((x) => x.v === filters.sort)?.label}
+      </TriggerButton>
+      <TriggerButton tabIndex={-1} icon={<ListFilter className="size-4" />} active={count > 0} badge={count}>
+        Filter
+      </TriggerButton>
+    </div>
+  );
+}
+
 export function FilterBar({
   filters,
   onChange,
@@ -497,6 +409,20 @@ export function FilterBar({
   resultCount,
 }: Props) {
   const [sheet, setSheet] = useState(false);
+  const isDesktop = useIsDesktop();
+  // Radix menus load only on desktop widths; the filter sheet only on first open.
+  const [Desktop, setDesktop] = useState<typeof import("./desktop-controls").DesktopControls | null>(null);
+  const [MobileSheet, setMobileSheet] = useState<typeof import("./mobile-filter-sheet").MobileFilterSheet | null>(null);
+  useEffect(() => {
+    if (isDesktop && !Desktop) import("./desktop-controls").then((m) => setDesktop(() => m.DesktopControls));
+  }, [isDesktop, Desktop]);
+  const openSheet = () => {
+    if (MobileSheet) return setSheet(true);
+    import("./mobile-filter-sheet").then((m) => {
+      setMobileSheet(() => m.MobileFilterSheet);
+      setSheet(true);
+    });
+  };
   const set = (p: Partial<Filters>) => onChange({ ...filters, ...p });
   const count =
     activeFilterCount({ ...filters, q: "", day: null }) + (squad ? 1 : 0);
@@ -506,11 +432,16 @@ export function FilterBar({
       <div className="flex items-center gap-2.5">
         <SearchField value={filters.q} onChange={(q) => set({ q })} />
         <div className="hidden lg:ml-auto lg:block">
-          <DesktopControls filters={filters} set={set} squad={squad} onSquad={onSquad} days={days} />
+          {Desktop ? (
+            <Desktop filters={filters} set={set} squad={squad} onSquad={onSquad} days={days} />
+          ) : (
+            <DesktopControlsShell filters={filters} squad={squad} />
+          )}
         </div>
         <button
           type="button"
-          onClick={() => setSheet(true)}
+          onClick={openSheet}
+          onPointerEnter={() => void import("./mobile-filter-sheet")}
           className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-line bg-raised px-3.5 text-[14px] font-medium text-fg lg:hidden"
           aria-label={`Filters${count ? `, ${count} active` : ""}`}
         >
@@ -535,66 +466,17 @@ export function FilterBar({
         <DayTabs days={days} value={filters.day} onChange={(day) => set({ day })} />
       </div>
 
-      <Sheet
-        open={sheet}
-        onOpenChange={setSheet}
-        title="Filters"
-        description={`${resultCount} ${resultCount === 1 ? "event matches" : "events match"}`}
-        width="md:w-[420px]"
-        footer={
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              onClick={() => {
-                onChange({
-                  ...DEFAULT_FILTERS,
-                  q: filters.q,
-                  day: filters.day,
-                });
-                onSquad(null);
-              }}
-            >
-              Reset
-            </Button>
-            <Button className="flex-1" onClick={() => setSheet(false)}>
-              Show {resultCount} {resultCount === 1 ? "event" : "events"}
-            </Button>
-          </div>
-        }
-      >
-        <div className="flex flex-col gap-7 px-5 pb-6 sm:px-6">
-          <fieldset className="flex flex-col gap-3">
-            <legend className="mb-3 text-overline text-fg-3">Squad size</legend>
-            <div className="overflow-x-auto scrollbar-none">
-              <SquadPicker squad={squad} onSquad={onSquad} compact />
-            </div>
-            <p className="text-[13px] text-fg-3">
-              Hides events your squad can’t enter and splits team fees per
-              person.
-            </p>
-          </fieldset>
-          <fieldset>
-            <legend className="mb-3 text-overline text-fg-3">Show</legend>
-            <div className="flex flex-wrap gap-2">
-              <FilterChips filters={filters} set={set} />
-            </div>
-          </fieldset>
-          <fieldset>
-            <legend className="mb-3 text-overline text-fg-3">Sort by</legend>
-            <div className="flex flex-wrap gap-2">
-              {SORTS.map((s) => (
-                <Chip
-                  key={s.v}
-                  on={filters.sort === s.v}
-                  onClick={() => set({ sort: s.v })}
-                >
-                  {s.label}
-                </Chip>
-              ))}
-            </div>
-          </fieldset>
-        </div>
-      </Sheet>
+      {MobileSheet && (
+        <MobileSheet
+          open={sheet}
+          onOpenChange={setSheet}
+          filters={filters}
+          onChange={onChange}
+          squad={squad}
+          onSquad={onSquad}
+          resultCount={resultCount}
+        />
+      )}
     </div>
   );
 }
