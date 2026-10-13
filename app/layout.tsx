@@ -20,7 +20,8 @@ const mono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
   weight: ["500"],
-  display: "swap",
+  // optional (like the other fonts): no late swap repaint, which counted against Speed Index.
+  display: "optional",
   preload: false,
 });
 
