@@ -48,7 +48,7 @@ export function Sheet({
           forceMount
         >
           <div aria-hidden className="mx-auto mt-2.5 h-1 w-10 shrink-0 rounded-full bg-line-strong md:hidden" />
-          <div className={cn("flex items-start justify-between gap-4 px-5 pt-4 pb-3 sm:px-6", hideTitle && "absolute inset-x-0 top-0 z-10 pt-5")}>
+          <div className={cn("flex items-start justify-between gap-4 px-5 pt-4 pb-3 sm:px-6 relative", hideTitle && "absolute inset-x-0 top-0 z-10 pt-5")}>
             <div className={cn("min-w-0", hideTitle && "sr-only")}>
               <Dialog.Title className="text-[19px] font-semibold tracking-[-0.01em]">{title}</Dialog.Title>
               {description ? (
@@ -60,7 +60,7 @@ export function Sheet({
             <button
               type="button"
               onClick={handleClose}
-              className="ml-auto inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-line-strong bg-elevated/85 text-fg-2 backdrop-blur-md transition-all duration-200 hover:bg-hover hover:text-fg active:scale-95 relative z-10 pointer-events-auto"
+              className="ml-auto inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-line-strong bg-elevated/85 text-fg-2 backdrop-blur-md transition-all duration-200 hover:bg-hover hover:text-fg active:scale-95 relative z-[9999] pointer-events-auto"
               aria-label="Close"
             >
               <X className="size-4" aria-hidden />
