@@ -8,7 +8,8 @@ import {
 } from "./schema";
 import { sessionsFor } from "./derive";
 
-export const API_BASE = process.env.EVENTS_API_BASE ?? "https://render72.pages.dev";
+export const API_BASE =
+  process.env.EVENTS_API_BASE ?? "https://render72.pages.dev";
 const UPSTREAM_TIMEOUT_MS = 6000;
 
 export class UpstreamError extends Error {
@@ -27,7 +28,11 @@ async function upstream(path: string): Promise<unknown> {
   try {
     return await upstreamOnce(path);
   } catch (err) {
-    const transient = err instanceof UpstreamError && (err.code === "timeout" || err.code === "network" || (err.code === "http" && err.status >= 500));
+    const transient =
+      err instanceof UpstreamError &&
+      (err.code === "timeout" ||
+        err.code === "network" ||
+        (err.code === "http" && err.status >= 500));
     if (!transient) throw err;
     await new Promise((r) => setTimeout(r, 300));
     return upstreamOnce(path);
@@ -42,15 +47,31 @@ async function upstreamOnce(path: string): Promise<unknown> {
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
     });
   } catch (err) {
-    const timeout = err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError");
-    throw new UpstreamError(timeout ? "Events API timed out" : "Events API unreachable", 504, timeout ? "timeout" : "network");
+    const timeout =
+      err instanceof Error &&
+      (err.name === "TimeoutError" || err.name === "AbortError");
+    throw new UpstreamError(
+      timeout ? "Events API timed out" : "Events API unreachable",
+      504,
+      timeout ? "timeout" : "network",
+    );
   }
-  if (res.status === 404) throw new UpstreamError("Not found", 404, "not_found");
-  if (!res.ok) throw new UpstreamError(`Events API responded ${res.status}`, res.status, "http");
+  if (res.status === 404)
+    throw new UpstreamError("Not found", 404, "not_found");
+  if (!res.ok)
+    throw new UpstreamError(
+      `Events API responded ${res.status}`,
+      res.status,
+      "http",
+    );
   try {
     return await res.json();
   } catch {
-    throw new UpstreamError("Events API returned a non-JSON body", 502, "malformed");
+    throw new UpstreamError(
+      "Events API returned a non-JSON body",
+      502,
+      "malformed",
+    );
   }
 }
 
@@ -74,21 +95,30 @@ export async function getEvents(): Promise<EventsPayload> {
     throw new UpstreamError((e as Error).message, 502, "malformed");
   }
 
-  const multiDay = parsed.events.filter((e) => e.schedule_summary.start_date !== e.schedule_summary.end_date);
-  const details = await Promise.allSettled(multiDay.map((e) => getEventDetailUncached(e.id)));
+  const multiDay = parsed.events.filter(
+    (e) => e.schedule_summary.start_date !== e.schedule_summary.end_date,
+  );
+  const details = await Promise.allSettled(
+    multiDay.map((e) => getEventDetailUncached(e.id)),
+  );
   const sessionsById = new Map<string, ListedEvent["sessions"]>();
   details.forEach((r, i) => {
     if (r.status === "fulfilled" && r.value.schedules.length) {
       sessionsById.set(
         multiDay[i].id,
-        r.value.schedules.map(({ event_date, start_time, end_time }) => ({ event_date, start_time, end_time })),
+        r.value.schedules.map(({ event_date, start_time, end_time }) => ({
+          event_date,
+          start_time,
+          end_time,
+        })),
       );
     }
   });
 
   const events: ListedEvent[] = parsed.events.map((e) => {
     const real = sessionsById.get(e.id);
-    const isMulti = e.schedule_summary.start_date !== e.schedule_summary.end_date;
+    const isMulti =
+      e.schedule_summary.start_date !== e.schedule_summary.end_date;
     return {
       ...e,
       sessions: real ?? sessionsFor(e),
@@ -124,4 +154,5 @@ export async function tryGetEvents(): Promise<EventsPayload | null> {
   }
 }
 
-export const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

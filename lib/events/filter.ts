@@ -1,5 +1,12 @@
 import type { ListedEvent } from "./schema";
-import { availability, eventDays, fitsSquad, isPast, seatsLeft, type Squad } from "./derive";
+import {
+  availability,
+  eventDays,
+  fitsSquad,
+  isPast,
+  seatsLeft,
+  type Squad,
+} from "./derive";
 import { isoToIst, istToEpochMin } from "./time";
 
 export type Sort = "start" | "deadline" | "price" | "seats";
@@ -15,19 +22,41 @@ export type Filters = {
   sort: Sort;
 };
 
-export const DEFAULT_FILTERS: Filters = { q: "", day: null, kind: "all", free: false, openOnly: false, online: false, sort: "start" };
+export const DEFAULT_FILTERS: Filters = {
+  q: "",
+  day: null,
+  kind: "all",
+  free: false,
+  openOnly: false,
+  online: false,
+  sort: "start",
+};
 
-const norm = (s: string) => s.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "");
+const norm = (s: string) =>
+  s.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "");
 
 /** Every term must match name, blurb, category or a tag. */
 export function matchesQuery(e: ListedEvent, q: string): boolean {
   const terms = norm(q).split(/\s+/).filter(Boolean);
   if (!terms.length) return true;
-  const hay = norm([e.name, e.blurb, e.category, e.event_type, e.event_mode === "ONLINE" ? "online" : "on campus offline", ...e.tags].join(" "));
+  const hay = norm(
+    [
+      e.name,
+      e.blurb,
+      e.category,
+      e.event_type,
+      e.event_mode === "ONLINE" ? "online" : "on campus offline",
+      ...e.tags,
+    ].join(" "),
+  );
   return terms.every((t) => hay.includes(t));
 }
 
-export function applyFilters(events: ListedEvent[], f: Filters, squad: Squad | null): ListedEvent[] {
+export function applyFilters(
+  events: ListedEvent[],
+  f: Filters,
+  squad: Squad | null,
+): ListedEvent[] {
   return events.filter((e) => {
     if (!matchesQuery(e, f.q)) return false;
     if (f.day && !eventDays(e).includes(f.day)) return false;
@@ -41,23 +70,39 @@ export function applyFilters(events: ListedEvent[], f: Filters, squad: Squad | n
   });
 }
 
-const startOf = (e: ListedEvent) => istToEpochMin(e.schedule_summary.start_date, e.schedule_summary.start_time);
-const deadlineOf = (e: ListedEvent) => isoToIst(e.registration_deadline)?.epochMs ?? Infinity;
+const startOf = (e: ListedEvent) =>
+  istToEpochMin(e.schedule_summary.start_date, e.schedule_summary.start_time);
+const deadlineOf = (e: ListedEvent) =>
+  isoToIst(e.registration_deadline)?.epochMs ?? Infinity;
 
-export function sortEvents(events: ListedEvent[], sort: Sort, squad: Squad | null): ListedEvent[] {
+export function sortEvents(
+  events: ListedEvent[],
+  sort: Sort,
+  squad: Squad | null,
+): ListedEvent[] {
   const list = [...events];
-  const perPerson = (e: ListedEvent) => (e.is_per_head || e.price === 0 ? e.price : e.price / (squad && squad > 1 ? squad : Math.max(1, e.min_teamsize)));
+  const perPerson = (e: ListedEvent) =>
+    e.is_per_head || e.price === 0
+      ? e.price
+      : e.price / (squad && squad > 1 ? squad : Math.max(1, e.min_teamsize));
   const by: Record<Sort, (a: ListedEvent, b: ListedEvent) => number> = {
     start: (a, b) => startOf(a) - startOf(b),
-    deadline: (a, b) => Number(availability(b) === "open") - Number(availability(a) === "open") || deadlineOf(a) - deadlineOf(b),
+    deadline: (a, b) =>
+      Number(availability(b) === "open") - Number(availability(a) === "open") ||
+      deadlineOf(a) - deadlineOf(b),
     price: (a, b) => perPerson(a) - perPerson(b) || startOf(a) - startOf(b),
-    seats: (a, b) => Number(availability(b) === "open") - Number(availability(a) === "open") || seatsLeft(a) - seatsLeft(b),
+    seats: (a, b) =>
+      Number(availability(b) === "open") - Number(availability(a) === "open") ||
+      seatsLeft(a) - seatsLeft(b),
   };
   return list.sort((a, b) => by[sort](a, b) || a.name.localeCompare(b.name));
 }
 
 /** Upcoming events grouped by first day; past events returned separately. */
-export function groupByDay(events: ListedEvent[]): { upcoming: { day: string; events: ListedEvent[] }[]; past: ListedEvent[] } {
+export function groupByDay(events: ListedEvent[]): {
+  upcoming: { day: string; events: ListedEvent[] }[];
+  past: ListedEvent[];
+} {
   const past = events.filter(isPast);
   const map = new Map<string, ListedEvent[]>();
   for (const e of events) {
@@ -65,11 +110,23 @@ export function groupByDay(events: ListedEvent[]): { upcoming: { day: string; ev
     const d = e.schedule_summary.start_date;
     (map.get(d) ?? map.set(d, []).get(d)!).push(e);
   }
-  return { upcoming: [...map.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([day, events]) => ({ day, events })), past };
+  return {
+    upcoming: [...map.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([day, events]) => ({ day, events })),
+    past,
+  };
 }
 
 export function activeFilterCount(f: Filters): number {
-  return [f.q.trim() !== "", f.day !== null, f.kind !== "all", f.free, f.openOnly, f.online].filter(Boolean).length;
+  return [
+    f.q.trim() !== "",
+    f.day !== null,
+    f.kind !== "all",
+    f.free,
+    f.openOnly,
+    f.online,
+  ].filter(Boolean).length;
 }
 
 /** URL <-> filters (only non-default values are written). */
@@ -86,7 +143,10 @@ export function filtersToParams(f: Filters, view: View): URLSearchParams {
   return p;
 }
 
-export function paramsToFilters(p: URLSearchParams): { filters: Filters; view: View } {
+export function paramsToFilters(p: URLSearchParams): {
+  filters: Filters;
+  view: View;
+} {
   const kind = p.get("kind");
   const sort = p.get("sort");
   const day = p.get("day");
@@ -98,7 +158,10 @@ export function paramsToFilters(p: URLSearchParams): { filters: Filters; view: V
       free: p.get("free") === "1",
       openOnly: p.get("open") === "1",
       online: p.get("online") === "1",
-      sort: sort === "deadline" || sort === "price" || sort === "seats" ? sort : "start",
+      sort:
+        sort === "deadline" || sort === "price" || sort === "seats"
+          ? sort
+          : "start",
     },
     view: p.get("view") === "timeline" ? "timeline" : "cards",
   };

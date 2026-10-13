@@ -19,12 +19,20 @@ export function eventsOnDay(events: ListedEvent[], day: string) {
 }
 
 /** Number of events running at the top of each hour on a day. */
-export function concurrencyByHour(events: ListedEvent[], day: string, fromHour = 8, toHour = 22) {
+export function concurrencyByHour(
+  events: ListedEvent[],
+  day: string,
+  fromHour = 8,
+  toHour = 22,
+) {
   const list = eventsOnDay(events, day).map(intervalsFor);
   const out: { hour: number; count: number }[] = [];
   for (let h = fromHour; h < toHour; h++) {
     const t = istToEpochMin(day, `${String(h).padStart(2, "0")}:00`);
-    out.push({ hour: h, count: list.filter((iv) => iv.some(([s, e]) => s <= t && t < e)).length });
+    out.push({
+      hour: h,
+      count: list.filter((iv) => iv.some(([s, e]) => s <= t && t < e)).length,
+    });
   }
   return out;
 }
@@ -33,11 +41,20 @@ export function peakConcurrency(events: ListedEvent[]) {
   let best = { day: "", hour: 0, count: 0, until: 0 };
   for (const day of festDays(events)) {
     const series = concurrencyByHour(events, day);
-    const i = series.reduce((bi, p, idx) => (p.count > series[bi].count ? idx : bi), 0);
+    const i = series.reduce(
+      (bi, p, idx) => (p.count > series[bi].count ? idx : bi),
+      0,
+    );
     if (series[i].count <= best.count) continue;
     let end = i; // extend the peak window across consecutive equal hours
-    while (end + 1 < series.length && series[end + 1].count === series[i].count) end++;
-    best = { day, hour: series[i].hour, count: series[i].count, until: series[end].hour + 1 };
+    while (end + 1 < series.length && series[end + 1].count === series[i].count)
+      end++;
+    best = {
+      day,
+      hour: series[i].hour,
+      count: series[i].count,
+      until: series[end].hour + 1,
+    };
   }
   return best;
 }
@@ -45,7 +62,9 @@ export function peakConcurrency(events: ListedEvent[]) {
 export function overlappingPairs(events: ListedEvent[]): number {
   const list = activeEvents(events);
   let n = 0;
-  for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) if (overlapMinutes(list[i], list[j]) > 0) n++;
+  for (let i = 0; i < list.length; i++)
+    for (let j = i + 1; j < list.length; j++)
+      if (overlapMinutes(list[i], list[j]) > 0) n++;
   return n;
 }
 
@@ -71,7 +90,14 @@ export function closingSoon(events: ListedEvent[], nowMs: number, limit = 4) {
   return activeEvents(events)
     .filter((e) => availability(e, nowMs) === "open")
     .map((e) => ({ e, deadline: isoToIst(e.registration_deadline) }))
-    .filter((x): x is { e: ListedEvent; deadline: NonNullable<ReturnType<typeof isoToIst>> } => !!x.deadline)
+    .filter(
+      (
+        x,
+      ): x is {
+        e: ListedEvent;
+        deadline: NonNullable<ReturnType<typeof isoToIst>>;
+      } => !!x.deadline,
+    )
     .sort((a, b) => a.deadline.epochMs - b.deadline.epochMs)
     .slice(0, limit);
 }
@@ -79,6 +105,9 @@ export function closingSoon(events: ListedEvent[], nowMs: number, limit = 4) {
 export function featured(events: ListedEvent[], limit = 3) {
   return activeEvents(events)
     .filter((e) => e.is_featured)
-    .sort((a, b) => Number(availability(b) === "open") - Number(availability(a) === "open"))
+    .sort(
+      (a, b) =>
+        Number(availability(b) === "open") - Number(availability(a) === "open"),
+    )
     .slice(0, limit);
 }

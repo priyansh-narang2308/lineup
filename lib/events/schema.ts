@@ -102,8 +102,14 @@ export function parseEventList(body: unknown): {
   events: EventSummary[];
   invalid: number;
 } {
-  if (!body || typeof body !== "object" || !Array.isArray((body as { events?: unknown }).events)) {
-    throw new MalformedResponseError("Expected an object with an `events` array.");
+  if (
+    !body ||
+    typeof body !== "object" ||
+    !Array.isArray((body as { events?: unknown }).events)
+  ) {
+    throw new MalformedResponseError(
+      "Expected an object with an `events` array.",
+    );
   }
   const raw = (body as { events: unknown[] }).events;
   const events: EventSummary[] = [];
@@ -120,26 +126,41 @@ export function parseEventList(body: unknown): {
 }
 
 export function parseEventDetail(body: unknown): EventDetail {
-  const r = z
-    .object({ event: eventDetailSchema })
-    .safeParse(body);
-  if (!r.success) throw new MalformedResponseError("Event detail did not match the expected shape.");
+  const r = z.object({ event: eventDetailSchema }).safeParse(body);
+  if (!r.success)
+    throw new MalformedResponseError(
+      "Event detail did not match the expected shape.",
+    );
   return r.data.event;
 }
 
 const listedEventSchema = z.extend(eventSummarySchema, {
   sessions: z.array(
-    z.object({ event_date: z.string(), start_time: z.string(), end_time: z.string() }),
+    z.object({
+      event_date: z.string(),
+      start_time: z.string(),
+      end_time: z.string(),
+    }),
   ),
   sessions_approximate: z.optional(z.boolean()),
 });
 
 /** Validates our own /api/events payload on the client. */
 export function parseEventsPayload(body: unknown): EventsPayload {
-  if (!body || typeof body !== "object" || !Array.isArray((body as { events?: unknown }).events)) {
-    throw new MalformedResponseError("Expected an object with an `events` array.");
+  if (
+    !body ||
+    typeof body !== "object" ||
+    !Array.isArray((body as { events?: unknown }).events)
+  ) {
+    throw new MalformedResponseError(
+      "Expected an object with an `events` array.",
+    );
   }
-  const b = body as { events: unknown[]; invalid?: unknown; fetchedAt?: unknown };
+  const b = body as {
+    events: unknown[];
+    invalid?: unknown;
+    fetchedAt?: unknown;
+  };
   const events: ListedEvent[] = [];
   let invalid = typeof b.invalid === "number" ? b.invalid : 0;
   for (const item of b.events) {
@@ -147,7 +168,11 @@ export function parseEventsPayload(body: unknown): EventsPayload {
     if (r.success) events.push(r.data);
     else invalid++;
   }
-  return { events, invalid, fetchedAt: typeof b.fetchedAt === "number" ? b.fetchedAt : Date.now() };
+  return {
+    events,
+    invalid,
+    fetchedAt: typeof b.fetchedAt === "number" ? b.fetchedAt : Date.now(),
+  };
 }
 
 export class MalformedResponseError extends Error {

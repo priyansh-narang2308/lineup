@@ -26,11 +26,19 @@ export const availabilityLabel: Record<Availability, string> = {
 };
 
 /** Status badge shown in card footers. */
-export function statusBadge(e: EventSummary): { tone: "warn" | "neutral"; label: string } {
+export function statusBadge(e: EventSummary): {
+  tone: "warn" | "neutral";
+  label: string;
+} {
   const a = availability(e);
   if (a === "open") {
     const d = isoToIst(e.registration_deadline);
-    return { tone: "warn", label: d ? `Closes ${formatDeadline(e.registration_deadline).split(",")[0]}` : "Open" };
+    return {
+      tone: "warn",
+      label: d
+        ? `Closes ${formatDeadline(e.registration_deadline).split(",")[0]}`
+        : "Open",
+    };
   }
   return { tone: "neutral", label: availabilityLabel[a] };
 }

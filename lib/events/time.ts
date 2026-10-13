@@ -1,16 +1,30 @@
-/**
- * All API times are IST wall-clock strings ("2026-11-14", "09:30").
- * We convert them to absolute epoch minutes for arithmetic, and format
- * display strings directly from the wall-clock values so server and client
- * render identically regardless of the viewer's timezone.
- */
-
 const IST_OFFSET_MIN = 330;
 const DAY_MS = 86_400_000;
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
-const WEEKDAYS_LONG = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"] as const;
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] as const;
+const WEEKDAYS_LONG = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+] as const;
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+] as const;
 
 export function parseClock(hhmm: string): number {
   const [h, m] = hhmm.split(":").map(Number);
@@ -26,9 +40,16 @@ export function istToEpochMin(date: string, hhmm: string): number {
 }
 
 /** Interval in epoch minutes. "23:59" end is treated as midnight so overnight sessions join up. */
-export function sessionInterval(s: { event_date: string; start_time: string; end_time: string }): [number, number] {
+export function sessionInterval(s: {
+  event_date: string;
+  start_time: string;
+  end_time: string;
+}): [number, number] {
   const start = istToEpochMin(s.event_date, s.start_time);
-  let end = istToEpochMin(s.event_date, s.end_time === "23:59" ? "24:00" : s.end_time);
+  let end = istToEpochMin(
+    s.event_date,
+    s.end_time === "23:59" ? "24:00" : s.end_time,
+  );
   if (end <= start) end += 24 * 60; // defensive: session crossing midnight
   return [start, end];
 }
@@ -70,7 +91,9 @@ export function dayOfMonth(date: string): number {
 }
 
 /** Wall-clock IST parts of an ISO timestamp with offset (registration_deadline). */
-export function isoToIst(iso: string): { date: string; time: string; epochMs: number } | null {
+export function isoToIst(
+  iso: string,
+): { date: string; time: string; epochMs: number } | null {
   const ms = Date.parse(iso);
   if (!Number.isFinite(ms)) return null;
   const ist = new Date(ms + IST_OFFSET_MIN * 60_000);
