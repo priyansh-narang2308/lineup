@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { CalendarDays, Check, Clock3, Link2, Mail, MapPin, Ticket, Trophy, Users, Zap } from "lucide-react";
-import type { EventDetail, ListedEvent } from "@/lib/events/schema";
+import type { EventDetail, EventSummary, ListedEvent } from "@/lib/events/schema";
 import { EventsFetchError, fetchEventDetail, getCachedDetail } from "@/lib/events/client";
 import { availability, formatINR, modeLabel, priceFor, seatsLeft, sessionsFor, teamLabel, type Squad } from "@/lib/events/derive";
 import { availabilityLabel, timeRange } from "@/lib/events/format";
@@ -184,7 +184,7 @@ function Fact({ icon: Icon, label, value, sub, loading }: { icon: typeof Clock3;
   );
 }
 
-function SeatBar({ e }: { e: ListedEvent }) {
+function SeatBar({ e }: { e: EventSummary }) {
   const pct = Math.min(100, Math.round((e.seats_filled / Math.max(1, e.total_seats)) * 100));
   return (
     <span className="mt-1 flex h-1 w-full overflow-hidden rounded-full bg-elevated" aria-label={`${pct}% of seats taken`}>
