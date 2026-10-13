@@ -1,7 +1,17 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "web", "runtimeExecutable": "pnpm", "runtimeArgs": ["start", "-p", "3100"], "port": 3100 },
-    { "name": "dev", "runtimeExecutable": "pnpm", "runtimeArgs": ["dev", "-p", "3200"], "port": 3200 }
+    {
+      "name": "web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["start", "-p", "3100"],
+      "port": 3100
+    },
+    {
+      "name": "dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev", "-p", "3200"],
+      "port": 3200
+    }
   ]
 }
