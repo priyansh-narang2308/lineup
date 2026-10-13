@@ -60,7 +60,7 @@ export function MenuContent({ className, align = "end", children, ...rest }: Com
 }
 
 const itemBase =
-  "relative flex h-10 cursor-default select-none items-center gap-2.5 rounded-xl px-2.5 text-[14px] text-fg-2 outline-none transition-colors " +
+  "relative flex h-10 cursor-pointer select-none items-center gap-2.5 rounded-xl px-2.5 text-[14px] text-fg-2 outline-none transition-colors " +
   "data-[highlighted]:bg-hover data-[highlighted]:text-fg data-[state=checked]:text-fg data-[disabled]:opacity-40 [&_svg]:shrink-0";
 
 export function MenuLabel({ className, ...rest }: ComponentProps<typeof M.Label>) {

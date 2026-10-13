@@ -10,6 +10,8 @@ import {
   type Squad,
 } from "@/lib/events/derive";
 import { dateLabel, statusBadge, timeRange } from "@/lib/events/format";
+import { sessionsFor } from "@/lib/events/derive";
+import { formatDay, weekdayShort } from "@/lib/events/time";
 import { eventImage } from "@/lib/event-image";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/cn";
@@ -27,6 +29,8 @@ type Props = {
   action?: ReactNode;
   imagePriority?: boolean;
   sizes?: string;
+  /** Selected day filter: badge shows which part of a multi-day event falls on it. */
+  day?: string | null;
 };
 
 export function EventCard({
@@ -39,6 +43,7 @@ export function EventCard({
   onIntent,
   action,
   imagePriority,
+  day = null,
   sizes = "(min-width: 1280px) 380px, (min-width: 768px) 45vw, 92vw",
 }: Props) {
   const price = priceFor(e, squad);
@@ -83,7 +88,7 @@ export function EventCard({
           className="absolute inset-0 bg-gradient-to-b from-canvas/60 via-transparent to-transparent"
         />
         <div className="absolute left-3 top-3 z-[2]">
-          <Badge tone="overlay">{dateLabel(e)}</Badge>
+          <Badge tone="overlay">{dayBadge(e, day)}</Badge>
         </div>
         {action && <div className="absolute right-3 top-3 z-[2]">{action}</div>}
       </div>
@@ -152,6 +157,15 @@ export function EventCard({
       </div>
     </article>
   );
+}
+
+function dayBadge(e: ListedEvent, day: string | null): string {
+  const sessions = sessionsFor(e);
+  const idx = day ? sessions.findIndex((s) => s.event_date === day) : -1;
+  if (idx <= 0 || sessions.length < 2) return idx === 0 && sessions.length > 1 ? `${formatDay(day!)} · day 1 of ${sessions.length}` : dateLabel(e);
+  const prev = sessions[idx - 1];
+  const overnight = sessions[idx].start_time === "00:00" && prev.end_time === "23:59";
+  return `${formatDay(day!)} · ${overnight ? `overnight from ${weekdayShort(prev.event_date)}` : `day ${idx + 1} of ${sessions.length}`}`;
 }
 
 export function EventCardSkeleton() {

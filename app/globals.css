@@ -147,3 +147,16 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Unlayered so it beats Tailwind's preflight: every interactive control gets a pointer. */
+button:not(:disabled),
+[role="button"],
+[role="menuitem"],
+[role="menuitemradio"],
+[role="menuitemcheckbox"],
+[role="radio"],
+summary,
+select,
+a[href] {
+  cursor: pointer;
+}

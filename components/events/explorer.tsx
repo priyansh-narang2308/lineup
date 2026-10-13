@@ -209,7 +209,7 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
     () => sortEvents(applyFilters(events, filters, squad), filters.sort, squad),
     [events, filters, squad],
   );
-  const grouped = useMemo(() => groupByDay(results), [results]);
+  const grouped = useMemo(() => groupByDay(results, filters.day), [results, filters.day]);
   const upcomingCount = events.filter(
     (e) => e.event_status === "ACTIVE",
   ).length;
@@ -439,6 +439,7 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
                   {list.map((e, i) => (
                     <li key={e.id} className="flex [&>article]:flex-1">
                       <EventCard
+                        day={filters.day}
                         event={e}
                         squad={squad}
                         onOpen={() => openEvent(e.id)}

@@ -98,7 +98,7 @@ export function sortEvents(
 }
 
 /** Upcoming events grouped by first day; completed and organiser-closed events returned separately. */
-export function groupByDay(events: ListedEvent[]): {
+export function groupByDay(events: ListedEvent[], day: string | null = null): {
   upcoming: { day: string; events: ListedEvent[] }[];
   past: ListedEvent[];
 } {
@@ -107,7 +107,8 @@ export function groupByDay(events: ListedEvent[]): {
   const map = new Map<string, ListedEvent[]>();
   for (const e of events) {
     if (inactive(e)) continue;
-    const d = e.schedule_summary.start_date;
+    // With a day selected, multi-day events sit under that day, not their start day.
+    const d = day ?? e.schedule_summary.start_date;
     (map.get(d) ?? map.set(d, []).get(d)!).push(e);
   }
   return {
