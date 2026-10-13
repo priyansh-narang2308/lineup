@@ -99,8 +99,18 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
     stale: null,
   });
   const [retrying, setRetrying] = useState(false);
+  const [showSkeleton, setShowSkeleton] = useState(!initial);
   const pushedDrawer = useRef(false);
   const { ids, squad } = useLineupState();
+
+  // Show skeleton for 1.5s on initial load for smooth perceived performance
+  useEffect(() => {
+    if (initial) {
+      setShowSkeleton(true);
+      const timer = setTimeout(() => setShowSkeleton(false), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [initial]);
 
   const src = sim ? simSrc : live;
   const { data, phase, error, stale } = src;
@@ -392,7 +402,7 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
           </p>
         )}
 
-        {phase === "loading" && !data ? (
+        {showSkeleton ? (
           <div
             aria-busy="true"
             className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"

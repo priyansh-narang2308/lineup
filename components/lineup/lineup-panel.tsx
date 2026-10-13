@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CalendarPlus,
   Check,
@@ -53,6 +53,18 @@ export function LineupPanel({
 }: Props) {
   const [copied, setCopied] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Show skeleton for 1.5 seconds when panel opens
+  useEffect(() => {
+    if (open) {
+      setLoading(true);
+      const timer = setTimeout(() => setLoading(false), 1500);
+      return () => clearTimeout(timer);
+    } else {
+      setLoading(false);
+    }
+  }, [open]);
 
   const conflicts = useMemo(() => lineupConflicts(events), [events]);
   const clashing = new Set(conflicts.flatMap((c) => [c.a.id, c.b.id]));
@@ -186,13 +198,15 @@ export function LineupPanel({
         onOpenChange={onOpenChange}
         title="Your lineup"
         description={
-          n
-            ? `${n} ${n === 1 ? "event" : "events"} · ${conflicts.length ? `${conflicts.length} ${conflicts.length === 1 ? "clash" : "clashes"}` : "clash-free"}`
-            : "Nothing added yet"
+          loading
+            ? "Loading..."
+            : n
+              ? `${n} ${n === 1 ? "event" : "events"} · ${conflicts.length ? `${conflicts.length} ${conflicts.length === 1 ? "clash" : "clashes"}` : "clash-free"}`
+              : "Nothing added yet"
         }
         width="md:w-[460px]"
         footer={
-          n ? (
+          !loading && n ? (
             <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between text-[13px]">
                 <span className="text-fg-3">
@@ -232,7 +246,11 @@ export function LineupPanel({
         }
       >
         <div className="flex flex-col gap-6 px-5 pb-6 sm:px-6">
-          {missing > 0 && (
+          {loading ? (
+            <LineupSkeleton />
+          ) : (
+            <>
+              {missing > 0 && (
             <p className="rounded-xl border border-line bg-raised p-3 text-[13px] text-fg-2">
               {missing} saved {missing === 1 ? "event is" : "events are"} no
               longer in the events API and {missing === 1 ? "was" : "were"}{" "}
@@ -392,8 +410,35 @@ export function LineupPanel({
               </button>
             </>
           )}
+            </>
+          )}
         </div>
       </Sheet>
     </>
+  );
+}
+
+function LineupSkeleton() {
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-2">
+        <div className="skeleton h-5 w-32 rounded" />
+        <div className="skeleton h-4 w-48 rounded" />
+      </div>
+      <div className="flex flex-col gap-2">
+        <div className="skeleton h-4 w-24 rounded" />
+        <div className="skeleton h-16 w-full rounded-xl" />
+      </div>
+      <div className="flex flex-col gap-2">
+        <div className="skeleton h-4 w-24 rounded" />
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="skeleton h-16 w-full rounded-xl" />
+        ))}
+      </div>
+      <div className="flex flex-col gap-2">
+        <div className="skeleton h-4 w-32 rounded" />
+        <div className="skeleton h-16 w-full rounded-xl" />
+      </div>
+    </div>
   );
 }

@@ -29,12 +29,13 @@ export function Sheet({
   footer?: ReactNode;
   width?: string;
 }) {
+  const handleClose = () => onOpenChange(false);
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay 
+        <Dialog.Overlay
           className="sheet-overlay fixed inset-0 z-50 bg-black/60 backdrop-blur-[2px]"
-          onClick={() => onOpenChange(false)}
+          onClick={handleClose}
         />
         <Dialog.Content
           aria-describedby={description ? undefined : undefined}
@@ -44,6 +45,7 @@ export function Sheet({
             "md:inset-y-0 md:right-0 md:left-auto md:max-h-none md:rounded-none md:rounded-l-3xl md:border-l md:border-t-0",
             width,
           )}
+          forceMount
         >
           <div aria-hidden className="mx-auto mt-2.5 h-1 w-10 shrink-0 rounded-full bg-line-strong md:hidden" />
           <div className={cn("flex items-start justify-between gap-4 px-5 pt-4 pb-3 sm:px-6", hideTitle && "absolute inset-x-0 top-0 z-10 pt-5")}>
@@ -55,15 +57,14 @@ export function Sheet({
                 <Dialog.Description className="sr-only">{title}</Dialog.Description>
               )}
             </div>
-            <Dialog.Close
+            <button
+              type="button"
+              onClick={handleClose}
               className="ml-auto inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-line-strong bg-elevated/85 text-fg-2 backdrop-blur-md transition-all duration-200 hover:bg-hover hover:text-fg active:scale-95 relative z-10 pointer-events-auto"
               aria-label="Close"
-              asChild
             >
-              <button type="button">
-                <X className="size-4" aria-hidden />
-              </button>
-            </Dialog.Close>
+              <X className="size-4" aria-hidden />
+            </button>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</div>
           {footer && <div className="border-t border-line-subtle bg-surface px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6">{footer}</div>}
