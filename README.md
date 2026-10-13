@@ -81,16 +81,23 @@ Semantic landmarks and headings, skip link, visible focus rings, focus-trapped d
 
 ## Performance
 
-Measured with **Lighthouse 12.8, local production build** (`next start`), default mobile and desktop presets:
+Measured with **Lighthouse 12.8 on a local production build** (`next start`), default mobile and desktop presets, repeated runs:
 
 | Page      | Mobile perf | Desktop perf | Accessibility | Best practices | SEO |
 | --------- | ----------- | ------------ | ------------- | -------------- | --- |
-| `/`       | 96–97       | 100          | 100           | 100            | 100 |
-| `/events` | 91–93       | 100          | 100           | 100            | 100 |
+| `/`       | 97          | 100          | 100           | 100            | 100 |
+| `/events` | 93          | 100          | 100           | 100            | 100 |
 
-These are local lab numbers; scores on the deployed site are tracked separately with PageSpeed Insights.
+Local lab numbers; scores on the deployed site are measured separately with PageSpeed Insights and vary a few points between runs.
 
-What keeps it fast: server components for everything static, no client-side data fetch on the landing page, the hero "product preview" is pure HTML/CSS (no images, no JS), two subset fonts with metric-matched fallbacks (body font uses `display: optional` to avoid late reflow), a single preloaded LCP image on `/events`, lazy images elsewhere, and `content-visibility` on long lists.
+What keeps it fast:
+
+- **Server Components for everything static.** The landing page ships only Next's runtime plus three tiny islands (lineup count, add-to-lineup, deadline countdown).
+- **Nothing above the fold waits for JavaScript or starts invisible.** Hero entrances are transform-only CSS, so the headline (LCP) paints on the first frame.
+- **Landing fade-ups use CSS scroll-driven animations** (`animation-timeline: view()`) — zero JavaScript, and browsers without support simply show the content. Framer Motion (lazy-loaded features) is used on `/events`.
+- **Code only where it's used.** Radix menus load on desktop widths only, behind server-rendered look-alike triggers; dialogs load on first open; links don't prefetch the next route's bundle on the landing page.
+- **Fonts:** one static display weight, body font with `display: optional`, and the ₹ glyph served from a 1 KB inlined subset of Geist instead of the 24 KB latin-ext files.
+- **Images:** same-origin, optimised AVIF/WebP (no third-party cookies); one preloaded LCP image on `/events`, the rest mounted only near the viewport.
 
 ## Running locally
 
