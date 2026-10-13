@@ -161,7 +161,8 @@ function DayTimeline({
   const maxH = Math.max(
     ...blocks.map((b) => Math.ceil((b.end - istToEpochMin(day, "00:00")) / 60)),
   );
-  const h0 = Math.max(0, Math.min(minH, 9));
+  // Start no earlier than 08:00; overnight sessions are clipped and labelled.
+  const h0 = Math.max(8, Math.min(minH, 9));
   const h1 = Math.min(24, Math.max(maxH, h0 + 8));
   const axStart = istToEpochMin(day, `${String(h0).padStart(2, "0")}:00`);
   const span = (h1 - h0) * 60;
@@ -203,8 +204,9 @@ function DayTimeline({
         ))}
         <ul>
           {blocks.map((b) => {
-            const left = 16 + ((b.start - axStart) / span) * width;
-            const w = Math.max(56, ((b.end - b.start) / span) * width);
+            const start = Math.max(b.start, axStart);
+            const left = 16 + ((start - axStart) / span) * width;
+            const w = Math.max(56, ((b.end - start) / span) * width);
             return (
               <li
                 key={b.e.id}
