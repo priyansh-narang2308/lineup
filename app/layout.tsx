@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { MotionProvider } from "@/components/motion/reveal";
 
 const display = Bricolage_Grotesque({
   variable: "--font-bricolage",
@@ -60,7 +61,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Skip to content
         </a>
-        {children}
+        <MotionProvider>{children}</MotionProvider>
       </body>
     </html>
   );

@@ -14,6 +14,7 @@ import {
 import { formatINR } from "@/lib/events/derive";
 import { ButtonLink } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
+import { Reveal } from "@/components/motion/reveal";
 
 export function Hero({ data }: { data: EventsPayload | null }) {
   const events = data?.events ?? [];
@@ -30,18 +31,33 @@ export function Hero({ data }: { data: EventsPayload | null }) {
         className="pointer-events-none absolute left-1/2 -top-105 h-225 w-350 max-w-none -translate-x-1/2 bg-[radial-gradient(closest-side,rgb(205_255_90/0.085),transparent)]"
       />
       <div className="container-page relative flex flex-col items-center pt-16 text-center sm:pt-24 lg:pt-28">
-        <h1
-          id="hero-title"
-          className="text-display-xl mt-6 max-w-[14ch] text-balance"
+        {/* LCP text: transform-only entrance, painted immediately. */}
+        <Reveal slide onMount y={14} className="mt-6 flex justify-center">
+          <h1
+            id="hero-title"
+            className="text-display-xl max-w-[14ch] text-balance"
+          >
+            Your fest, without the clashes.
+          </h1>
+        </Reveal>
+        <Reveal
+          slide
+          onMount
+          y={14}
+          delay={0.06}
+          as="p"
+          className="mt-6 max-w-152 text-[17px] leading-7 text-fg-2 sm:text-[18px] sm:leading-7"
         >
-          Your fest, without the clashes.
-        </h1>
-        <p className="mt-6 max-w-152 text-[17px] leading-7 text-fg-2 sm:text-[18px] sm:leading-7">
-          Most of this weekend’s events overlap. Pick what you love — Lineup
-          flags every clash, matches events to your squad size and keeps every
-          registration deadline in view.
-        </p>
-        <div className="mt-8 flex flex-col items-stretch gap-3 self-stretch sm:flex-row sm:items-center sm:self-auto">
+          Most of this weekend&apos;s events overlap. Pick what you love -
+          Lineup flags every clash, matches events to your squad size and keeps
+          every registration deadline in view.
+        </Reveal>
+        <Reveal
+          onMount
+          delay={0.16}
+          y={12}
+          className="mt-8 flex flex-col items-stretch gap-3 self-stretch sm:flex-row sm:items-center sm:self-auto"
+        >
           <ButtonLink
             href="/events"
             iconRight={<ArrowRight aria-hidden className="size-4" />}
@@ -51,7 +67,7 @@ export function Hero({ data }: { data: EventsPayload | null }) {
           <ButtonLink href="/events?view=cards" variant="secondary">
             Browse all {events.length || ""} events
           </ButtonLink>
-        </div>
+        </Reveal>
       </div>
       {data && <HeroPreview events={events} />}
     </section>
@@ -175,7 +191,12 @@ function HeroPreview({ events }: { events: ListedEvent[] }) {
 
   return (
     <div className="container-page relative mt-14 sm:mt-16">
-      <div className="relative mx-auto max-w-295 animate-rise [animation-delay:120ms]">
+      <Reveal
+        onMount
+        delay={0.28}
+        y={32}
+        className="relative mx-auto max-w-295"
+      >
         <div
           className="relative overflow-hidden rounded-[20px] border border-line bg-surface shadow-(--shadow-overlay)"
           role="img"
@@ -380,7 +401,7 @@ function HeroPreview({ events }: { events: ListedEvent[] }) {
           At peak, {peak.count} events run at the same time on{" "}
           {weekdayLong(day)}.
         </p>
-      </div>
+      </Reveal>
     </div>
   );
 }

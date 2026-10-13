@@ -32,6 +32,7 @@ import { LineupToggle } from "@/components/lineup/lineup-toggle";
 import { ButtonLink } from "@/components/ui/button";
 import { RelativeDeadline } from "@/components/ui/relative-deadline";
 import { cn } from "@/lib/cn";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
 
 function SectionHead({
   over,
@@ -47,7 +48,7 @@ function SectionHead({
   id: string;
 }) {
   return (
-    <div className="flex max-w-xl flex-col gap-4">
+    <Reveal className="flex max-w-xl flex-col gap-4">
       <p
         className={cn(
           "text-overline",
@@ -62,7 +63,7 @@ function SectionHead({
       {body && (
         <p className="text-[16px] leading-7 text-fg-2 sm:text-[17px]">{body}</p>
       )}
-    </div>
+    </Reveal>
   );
 }
 
@@ -90,20 +91,21 @@ export function Problem({ data }: { data: EventsPayload }) {
             title={`${weekdayLong(peak.day)}, ${hh(peak.hour)}. ${peak.count} things happen at once.`}
             body={`Across the weekend ${pairs} pairs of events overlap. Registration closes on ${deadlines} different dates. Team rules run from solo-only to crews of ${team.max}. Planning that in your head is how you miss the one thing you actually wanted.`}
           />
-          <dl className="flex flex-wrap gap-x-10 gap-y-4">
+          <Stagger as="dl" className="flex flex-wrap gap-x-10 gap-y-4">
             {[
               [String(pairs), "overlapping pairs", "text-clash"],
               [String(deadlines), "registration deadlines", "text-warn"],
               [`${team.min}–${team.max}`, "people per team", "text-fg"],
             ].map(([n, l, c]) => (
-              <div key={l} className="flex flex-col-reverse gap-1">
+              <StaggerItem key={l} className="flex flex-col-reverse gap-1">
                 <dt className="text-[13px] text-fg-3">{l}</dt>
                 <dd className={cn("text-heading-l", c)}>{n}</dd>
-              </div>
+              </StaggerItem>
             ))}
-          </dl>
+          </Stagger>
         </div>
 
+        <Reveal delay={0.1} y={28}>
         <figure className="rounded-3xl border border-line-subtle bg-surface p-5 sm:p-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <figcaption className="text-[14px] font-medium text-fg-2">
@@ -156,6 +158,7 @@ export function Problem({ data }: { data: EventsPayload }) {
             overnight hackathon and multi-day sprint.
           </p>
         </figure>
+        </Reveal>
       </div>
     </section>
   );
@@ -177,8 +180,8 @@ export function HowItWorks() {
         over="How it works"
         title="Three steps to a weekend that fits."
       />
-      <ol className="mt-12 grid gap-5 md:grid-cols-3">
-        <li className={card}>
+      <Stagger as="ol" className="mt-12 grid gap-5 md:grid-cols-3">
+        <StaggerItem as="li" className={card}>
           <div className={stage} aria-hidden>
             <div className="flex items-center gap-0.5 rounded-full border border-line bg-raised p-[3px] text-[12px] font-medium">
               <span className="flex items-center gap-1.5 px-2 text-fg-3">
@@ -211,8 +214,8 @@ export function HowItWorks() {
               what each of you actually pays.
             </p>
           </div>
-        </li>
-        <li className={card}>
+        </StaggerItem>
+        <StaggerItem as="li" className={card}>
           <div className={stage} aria-hidden>
             <div className="flex w-full max-w-[300px] items-center gap-2.5 rounded-[10px] border border-accent bg-accent-subtle py-1 pl-1 pr-3">
               <span className="h-11 w-[3px] rounded-full bg-accent" />
@@ -247,8 +250,8 @@ export function HowItWorks() {
               multi-day events included.
             </p>
           </div>
-        </li>
-        <li className={card}>
+        </StaggerItem>
+        <StaggerItem as="li" className={card}>
           <div className={stage} aria-hidden>
             <span className="inline-flex h-11 items-center gap-2 rounded-full bg-accent px-5 text-[14px] font-medium text-on-accent">
               <CalendarPlus className="size-4" />
@@ -269,8 +272,8 @@ export function HowItWorks() {
               account — your lineup stays on this device.
             </p>
           </div>
-        </li>
-      </ol>
+        </StaggerItem>
+      </Stagger>
     </section>
   );
 }
@@ -297,9 +300,9 @@ export function Featured({ data }: { data: EventsPayload }) {
           View all events
         </ButtonLink>
       </div>
-      <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <Stagger as="ul" className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {list.map((e) => (
-          <li key={e.id} className="flex">
+          <StaggerItem as="li" key={e.id} className="flex">
             <div className="flex w-full flex-col [&>article]:flex-1">
               <EventCard
                 event={e}
@@ -307,9 +310,9 @@ export function Featured({ data }: { data: EventsPayload }) {
                 action={<LineupToggle id={e.id} name={e.name} />}
               />
             </div>
-          </li>
+          </StaggerItem>
         ))}
-      </ul>
+      </Stagger>
     </section>
   );
 }
@@ -337,9 +340,10 @@ export function ClosingSoon({
           title="Registration closes first here."
           body={`${distinctDeadlines(data.events)} different deadlines across the fest. Lineup orders the ones in your plan so nothing quietly closes on you.`}
         />
-        <ul className="overflow-hidden rounded-3xl border border-line-subtle bg-surface">
+        <Stagger as="ul" className="overflow-hidden rounded-3xl border border-line-subtle bg-surface">
           {items.map(({ e, deadline }) => (
-            <li
+            <StaggerItem
+              as="li"
               key={e.id}
               className="border-b border-line-subtle last:border-0"
             >
@@ -378,9 +382,9 @@ export function ClosingSoon({
                   className="size-5 shrink-0 text-fg-3 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-fg"
                 />
               </Link>
-            </li>
+            </StaggerItem>
           ))}
-        </ul>
+        </Stagger>
       </div>
     </section>
   );
@@ -400,7 +404,7 @@ export function ByDay({ data }: { data: EventsPayload }) {
         over={`${days.length} days`}
         title="Start with a day."
       />
-      <ul className="mt-12 grid gap-5 md:grid-cols-3">
+      <Stagger as="ul" className="mt-12 grid gap-5 md:grid-cols-3">
         {days.map((d) => {
           const list = eventsOnDay(data.events, d);
           // A non-featured cover keeps these tiles visually distinct from the Featured row.
@@ -424,7 +428,7 @@ export function ByDay({ data }: { data: EventsPayload }) {
               ? `The busiest day — ${peak.count} events at once by ${String(peak.hour).padStart(2, "0")}:00`
               : `${list.filter((e) => e.is_technical).length} technical · ${list.filter((e) => !e.is_technical).length} cultural · from ${first.schedule_summary.start_time}`;
           return (
-            <li key={d}>
+            <StaggerItem as="li" key={d}>
               <Link
                 href={`/events?day=${d}`}
                 className="group relative flex h-[340px] flex-col justify-end overflow-hidden rounded-3xl border border-line-subtle p-6 sm:h-[420px] sm:p-7"
@@ -452,10 +456,10 @@ export function ByDay({ data }: { data: EventsPayload }) {
                   </span>
                 </span>
               </Link>
-            </li>
+            </StaggerItem>
           );
         })}
-      </ul>
+      </Stagger>
     </section>
   );
 }
@@ -466,7 +470,7 @@ export function FinalCta({ count }: { count: number }) {
       aria-labelledby="cta-title"
       className="container-page py-28 sm:py-40"
     >
-      <div className="relative overflow-hidden rounded-[32px] border border-line-subtle bg-surface px-6 py-20 text-center sm:px-16 sm:py-24">
+      <Reveal y={28} className="relative overflow-hidden rounded-[32px] border border-line-subtle bg-surface px-6 py-20 text-center sm:px-16 sm:py-24">
         <div
           aria-hidden
           className="pointer-events-none absolute left-1/2 top-1/2 h-[600px] w-[1000px] max-w-none -translate-x-1/2 bg-[radial-gradient(closest-side,rgb(205_255_90/0.11),transparent)]"
@@ -488,7 +492,7 @@ export function FinalCta({ count }: { count: number }) {
             Build your lineup
           </ButtonLink>
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }
