@@ -51,6 +51,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
+      suppressHydrationWarning
       lang="en"
       className={`${display.variable} ${sans.variable} ${mono.variable} antialiased`}
     >
