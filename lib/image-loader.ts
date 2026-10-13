@@ -1,14 +1,14 @@
 "use client";
 
-/**
- * next/image loader for event photography.
- * Event images are hosted on Pexels, which resizes and transcodes on its CDN
- * (1-year immutable cache). We request the exact width the browser needs as
- * WebP, so we pay no image-optimisation cost and serve ~20 KB card covers.
- *
- * Aspect ratio is passed via a `#ar=3:2` fragment on src (stripped here).
- */
-export default function pexelsLoader({ src, width, quality }: { src: string; width: number; quality?: number }) {
+export default function pexelsLoader({
+  src,
+  width,
+  quality,
+}: {
+  src: string;
+  width: number;
+  quality?: number;
+}) {
   let url: URL;
   try {
     url = new URL(src);

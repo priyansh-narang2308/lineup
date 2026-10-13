@@ -2,7 +2,8 @@
 // Usage: node scripts/shots.mjs <baseUrl> <outDir> [path ...]
 import { chromium } from "@playwright/test";
 
-const [base = "http://localhost:3200", out = "./.shots", ...paths] = process.argv.slice(2);
+const [base = "http://localhost:3200", out = "./.shots", ...paths] =
+  process.argv.slice(2);
 const routes = paths.length ? paths : ["/"];
 const viewports = [
   { name: "390", width: 390, height: 844 },
@@ -13,7 +14,10 @@ const viewports = [
 const browser = await chromium.launch({ channel: "chrome" });
 for (const route of routes) {
   for (const vp of viewports) {
-    const page = await browser.newPage({ viewport: { width: vp.width, height: vp.height }, deviceScaleFactor: 1 });
+    const page = await browser.newPage({
+      viewport: { width: vp.width, height: vp.height },
+      deviceScaleFactor: 1,
+    });
     await page.goto(base + route, { waitUntil: "networkidle" });
     // Trigger lazy images, then return to top.
     await page.evaluate(async () => {
@@ -24,9 +28,14 @@ for (const route of routes) {
       window.scrollTo(0, 0);
     });
     await page.waitForTimeout(400);
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth,
+    );
     const slug = route.replace(/[^a-z0-9]+/gi, "_") || "root";
-    await page.screenshot({ path: `${out}/${slug}-${vp.name}.png`, fullPage: true });
+    await page.screenshot({
+      path: `${out}/${slug}-${vp.name}.png`,
+      fullPage: true,
+    });
     console.log(`${route} @${vp.name}: horizontal overflow ${overflow}px`);
     await page.close();
   }
