@@ -1,5 +1,5 @@
 import { connection } from "next/server";
-import { getEvents, UpstreamError } from "@/lib/events/server";
+import { getEvents, upstreamCode } from "@/lib/events/server";
 
 export async function GET() {
   try {
@@ -12,14 +12,14 @@ export async function GET() {
     });
   } catch (err) {
     await connection();
-    const e = err instanceof UpstreamError ? err : null;
+    const code = upstreamCode(err);
     return Response.json(
       {
-        error: e?.code ?? "upstream_unavailable",
+        error: code ?? "upstream_unavailable",
         message: "The events service is unavailable right now.",
       },
       {
-        status: e?.code === "timeout" ? 504 : 502,
+        status: code === "timeout" ? 504 : 502,
         headers: { "Cache-Control": "no-store" },
       },
     );

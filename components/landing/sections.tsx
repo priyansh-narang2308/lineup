@@ -163,9 +163,9 @@ export function Problem({ data }: { data: EventsPayload }) {
 
 export function HowItWorks() {
   const card =
-    "flex flex-col gap-6 rounded-3xl border border-line-subtle bg-surface p-6 sm:p-7";
+    "flex min-w-0 flex-col gap-6 rounded-3xl border border-line-subtle bg-surface p-5 sm:p-7";
   const stage =
-    "flex h-[176px] flex-col items-center justify-center gap-3 rounded-2xl border border-line-subtle bg-inset px-4";
+    "flex h-[176px] flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border border-line-subtle bg-inset px-3 sm:px-4";
   return (
     <section
       id="how"
@@ -181,9 +181,9 @@ export function HowItWorks() {
         <li className={card}>
           <div className={stage} aria-hidden>
             <div className="flex items-center gap-0.5 rounded-full border border-line bg-raised p-[3px] text-[12px] font-medium">
-              <span className="flex items-center gap-1.5 px-2.5 text-fg-3">
+              <span className="flex items-center gap-1.5 px-2 text-fg-3">
                 <Users className="size-3.5" />
-                Going as
+                <span className="hidden min-[400px]:inline">Going as</span>
               </span>
               {["Solo", "2", "3", "4", "5+"].map((x) => (
                 <span

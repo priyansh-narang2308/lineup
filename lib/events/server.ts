@@ -138,11 +138,20 @@ async function getEventDetailUncached(id: string): Promise<EventDetail> {
   }
 }
 
-export async function getEventDetail(id: string): Promise<EventDetail> {
+/**
+ * Cached detail. Not-found is a normal result (null), not an exception, because
+ * errors leaving a "use cache" scope are sanitised in production and lose their code.
+ */
+export async function getEventDetail(id: string): Promise<EventDetail | null> {
   "use cache";
   cacheLife({ stale: 300, revalidate: 300, expire: 86_400 });
   cacheTag("events", `event:${id}`);
-  return getEventDetailUncached(id);
+  try {
+    return await getEventDetailUncached(id);
+  } catch (err) {
+    if (upstreamCode(err) === "not_found") return null;
+    throw err;
+  }
 }
 
 /** Never throws — returns null so pages can render their client-side fallback. */
@@ -152,6 +161,17 @@ export async function tryGetEvents(): Promise<EventsPayload | null> {
   } catch {
     return null;
   }
+}
+
+/**
+ * Errors rethrown from a "use cache" scope lose their prototype, so classify by
+ * shape rather than instanceof.
+ */
+export function upstreamCode(err: unknown): UpstreamError["code"] | undefined {
+  const code = (err as { code?: unknown } | null)?.code;
+  return code === "timeout" || code === "network" || code === "http" || code === "malformed" || code === "not_found"
+    ? code
+    : undefined;
 }
 
 export const UUID_RE =

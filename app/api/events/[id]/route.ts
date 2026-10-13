@@ -1,4 +1,4 @@
-import { getEventDetail, UpstreamError, UUID_RE } from "@/lib/events/server";
+import { getEventDetail, upstreamCode, UUID_RE } from "@/lib/events/server";
 
 export async function GET(
   _req: Request,
@@ -13,6 +13,12 @@ export async function GET(
   }
   try {
     const event = await getEventDetail(id);
+    if (!event) {
+      return Response.json(
+        { error: "not_found", message: "Event not found." },
+        { status: 404, headers: { "Cache-Control": "public, s-maxage=60" } },
+      );
+    }
     return Response.json(
       { event },
       {
@@ -23,8 +29,8 @@ export async function GET(
       },
     );
   } catch (err) {
-    const e = err instanceof UpstreamError ? err : null;
-    if (e?.code === "not_found") {
+    const code = upstreamCode(err);
+    if (code === "not_found") {
       return Response.json(
         { error: "not_found", message: "Event not found." },
         { status: 404, headers: { "Cache-Control": "public, s-maxage=60" } },
@@ -32,11 +38,11 @@ export async function GET(
     }
     return Response.json(
       {
-        error: e?.code ?? "upstream_unavailable",
+        error: code ?? "upstream_unavailable",
         message: "The events service is unavailable right now.",
       },
       {
-        status: e?.code === "timeout" ? 504 : 502,
+        status: code === "timeout" ? 504 : 502,
         headers: { "Cache-Control": "no-store" },
       },
     );
