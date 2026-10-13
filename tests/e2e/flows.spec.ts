@@ -72,3 +72,20 @@ test("timeline view shows days with lineup legend", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /Saturday/ })).toBeVisible();
   await expect(page.getByText("Clashes with your lineup")).toBeVisible();
 });
+
+test("desktop dropdowns: filter, sort and removable chips", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/events");
+  await page.getByRole("button", { name: /^Filter/ }).click();
+  await page.getByRole("menuitemcheckbox", { name: "Free events" }).click();
+  await page.keyboard.press("Escape");
+  await expect(page).toHaveURL(/free=1/);
+  await expect(page.getByRole("button", { name: "Remove filter: Free" })).toBeVisible();
+
+  await page.getByRole("button", { name: /^Sort by/ }).click();
+  await page.getByRole("menuitemradio", { name: "Lowest price" }).click();
+  await expect(page).toHaveURL(/sort=price/);
+
+  await page.getByRole("button", { name: "Remove filter: Free" }).click();
+  await expect(page).not.toHaveURL(/free=1/);
+});

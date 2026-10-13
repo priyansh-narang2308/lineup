@@ -11,7 +11,7 @@ The API describes a three-day campus fest. Across its 27 active events, **113 pa
 
 ## Features
 
-- **Clash-aware lineup** — add events and every overlapping event is flagged with the exact overlap, computed from *real sessions* (the overnight hackathon and the three-day film sprint included).
+- **Clash-aware lineup** — add events and every overlapping event is flagged with the exact overlap, computed from _real sessions_ (the overnight hackathon and the three-day film sprint included).
 - **Squad size** — "Going as Solo / 2 / 3 / 4 / 5+" hides events your squad can't enter and turns per-team fees into what each person pays.
 - **Cards and timeline views** — a day timeline on desktop, a vertical agenda on mobile.
 - **Search, day filter, technical/cultural, free, open-for-registration, online, four sort orders** — all synced to the URL, so every view is shareable.
@@ -53,18 +53,18 @@ lib/
 
 ## Reliability
 
-| Situation | What the user sees |
-|---|---|
+| Situation                           | What the user sees                                                                               |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------ |
 | Refresh fails but a snapshot exists | Data stays usable; a "Live update failed — showing the schedule loaded N min ago · Retry" banner |
-| No data and the service errors | A specific error panel with **Try again** |
-| Timeout (8 s per attempt) | Bounded retries (2, exponential backoff + jitter), then a timeout panel |
-| Offline | Offline panel; automatic retry when the connection returns |
-| Empty dataset | An honest "No events published yet" state |
-| Filters match nothing | "No events match" with a one-click **Clear filters** |
-| Malformed / non-JSON response | Rejected — nothing unverified is rendered |
-| One malformed record | That record is dropped and counted; the rest render |
-| Invalid / unknown event id | 400/404 from our proxy; "That event doesn't exist" in the drawer |
-| Detail fails to load | The drawer keeps the summary and offers retry |
+| No data and the service errors      | A specific error panel with **Try again**                                                        |
+| Timeout (8 s per attempt)           | Bounded retries (2, exponential backoff + jitter), then a timeout panel                          |
+| Offline                             | Offline panel; automatic retry when the connection returns                                       |
+| Empty dataset                       | An honest "No events published yet" state                                                        |
+| Filters match nothing               | "No events match" with a one-click **Clear filters**                                             |
+| Malformed / non-JSON response       | Rejected — nothing unverified is rendered                                                        |
+| One malformed record                | That record is dropped and counted; the rest render                                              |
+| Invalid / unknown event id          | 400/404 from our proxy; "That event doesn't exist" in the drawer                                 |
+| Detail fails to load                | The drawer keeps the summary and offers retry                                                    |
 
 Requests are cancelled on unmount, deduplicated while in flight, and retried only for transient failures (network, timeout, 5xx, 429).
 
@@ -83,10 +83,10 @@ Semantic landmarks and headings, skip link, visible focus rings, focus-trapped d
 
 Measured with **Lighthouse 12.8, local production build** (`next start`), default mobile and desktop presets:
 
-| Page | Mobile perf | Desktop perf | Accessibility | Best practices | SEO |
-|---|---|---|---|---|---|
-| `/` | 96–97 | 100 | 100 | 100 | 100 |
-| `/events` | 91–93 | 100 | 100 | 100 | 100 |
+| Page      | Mobile perf | Desktop perf | Accessibility | Best practices | SEO |
+| --------- | ----------- | ------------ | ------------- | -------------- | --- |
+| `/`       | 96–97       | 100          | 100           | 100            | 100 |
+| `/events` | 91–93       | 100          | 100           | 100            | 100 |
 
 These are local lab numbers; scores on the deployed site are tracked separately with PageSpeed Insights.
 
@@ -108,11 +108,3 @@ pnpm build && pnpm test:e2e   # Playwright: user flows, every failure state, no 
 ```
 
 End-to-end failure tests intercept requests to **our own** proxy or use the reliability lab; the organisers' API is never load-tested.
-
-## Design
-
-Dark, image-led interface with a restrained lime accent reserved for "your lineup" and primary actions, red only for real clashes, amber only for deadlines. Display type is Bricolage Grotesque, UI type is Geist, times and numbers use Geist Mono. The design system (tokens, components, desktop landing page) is in Figma: *Lineup — Render72 | Product Design*.
-
-## AI assistance
-
-Parts of this project were built with the help of an AI coding assistant. All product decisions, review and the final submission are the author's.

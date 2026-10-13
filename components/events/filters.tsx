@@ -2,11 +2,23 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  LayoutGrid,
-  Search,
-  SlidersHorizontal,
+  ArrowUpDown,
+  CalendarDays,
+  Clock3,
+  Cpu,
   GanttChart,
+  Globe,
+  Hourglass,
+  LayoutGrid,
+  ListFilter,
+  Palette,
+  Search,
+  Shapes,
+  SlidersHorizontal,
+  Ticket,
   Users,
+  Armchair,
+  Wallet,
   X,
 } from "lucide-react";
 import type { Squad } from "@/lib/events/derive";
@@ -20,6 +32,19 @@ import {
 import { weekdayShort } from "@/lib/events/time";
 import { Sheet } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import {
+  Menu,
+  MenuCheckboxItem,
+  MenuContent,
+  MenuLabel,
+  MenuRadioGroup,
+  MenuRadioItem,
+  MenuSeparator,
+  MenuSub,
+  MenuSubContent,
+  MenuSubTrigger,
+  MenuTrigger,
+} from "@/components/ui/menu";
 import { cn } from "@/lib/cn";
 
 type Props = {
@@ -225,7 +250,7 @@ function SearchField({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
   return (
-    <label className="group flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-line bg-raised pl-3.5 pr-2 transition-colors focus-within:border-fg-3">
+    <label className="group flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border border-line bg-raised pl-3.5 pr-2 transition-colors focus-within:border-fg-3 lg:max-w-[520px]">
       <Search aria-hidden className="size-4 shrink-0 text-fg-3" />
       <span className="sr-only">Search events</span>
       <input
@@ -294,28 +319,170 @@ function FilterChips({
   );
 }
 
-function SortSelect({
-  value,
-  onChange,
+const SORT_ICONS: Record<Sort, typeof Clock3> = {
+  start: Clock3,
+  deadline: Hourglass,
+  price: Wallet,
+  seats: Armchair,
+};
+
+const squadLabel = (s: Squad | null) =>
+  s === null ? "Any size" : s === 1 ? "Solo" : s === 5 ? "5+ people" : `${s} people`;
+
+const dayLabel = (d: string) => `${weekdayShort(d)} ${Number(d.slice(8))}`;
+
+/** Desktop: three quiet dropdowns instead of a wall of chips. */
+function DesktopControls({
+  filters,
+  set,
+  squad,
+  onSquad,
+  days,
 }: {
-  value: Sort;
-  onChange: (s: Sort) => void;
+  filters: Filters;
+  set: (p: Partial<Filters>) => void;
+  squad: Squad | null;
+  onSquad: (s: Squad | null) => void;
+  days: Props["days"];
 }) {
+  const SortIcon = SORT_ICONS[filters.sort];
+  const filterCount = activeFilterCount({ ...filters, q: "", day: null, sort: "start" }) + (squad ? 1 : 0);
   return (
-    <label className="relative inline-flex h-[34px] items-center gap-2 rounded-full border border-line pl-3.5 pr-3 text-[13px] text-fg-2 focus-within:border-fg-3">
-      <span className="text-fg-3">Sort</span>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value as Sort)}
-        className="cursor-pointer appearance-none bg-transparent pr-1 font-medium text-fg outline-none"
-      >
-        {SORTS.map((s) => (
-          <option key={s.v} value={s.v} className="bg-elevated">
-            {s.label}
-          </option>
-        ))}
-      </select>
-    </label>
+    <div className="flex items-center gap-2.5">
+      <Menu>
+        <MenuTrigger icon={<CalendarDays aria-hidden className="size-4" />} active={filters.day !== null} aria-label="Day">
+          {filters.day ? dayLabel(filters.day) : "All days"}
+        </MenuTrigger>
+        <MenuContent>
+          <MenuLabel>Day</MenuLabel>
+          <MenuRadioGroup value={filters.day ?? "all"} onValueChange={(v) => set({ day: v === "all" ? null : v })}>
+            <MenuRadioItem value="all">All days</MenuRadioItem>
+            {days.map((d) => (
+              <MenuRadioItem key={d.date} value={d.date} hint={`${d.count}`}>
+                {dayLabel(d.date)}
+              </MenuRadioItem>
+            ))}
+          </MenuRadioGroup>
+        </MenuContent>
+      </Menu>
+
+      <Menu>
+        <MenuTrigger icon={<SortIcon aria-hidden className="size-4" />} aria-label={`Sort by ${SORTS.find((x) => x.v === filters.sort)?.label}`}>
+          {SORTS.find((x) => x.v === filters.sort)?.label}
+        </MenuTrigger>
+        <MenuContent>
+          <MenuLabel>Sort by</MenuLabel>
+          <MenuRadioGroup value={filters.sort} onValueChange={(v) => set({ sort: v as Sort })}>
+            {SORTS.map((o) => {
+              const Icon = SORT_ICONS[o.v];
+              return (
+                <MenuRadioItem key={o.v} value={o.v} icon={<Icon aria-hidden className="size-4" />}>
+                  {o.label}
+                </MenuRadioItem>
+              );
+            })}
+          </MenuRadioGroup>
+        </MenuContent>
+      </Menu>
+
+      <Menu>
+        <MenuTrigger icon={<ListFilter aria-hidden className="size-4" />} active={filterCount > 0} badge={filterCount} aria-label={`Filter${filterCount ? `, ${filterCount} active` : ""}`}>
+          Filter
+        </MenuTrigger>
+        <MenuContent className="min-w-[264px]">
+          <MenuSub>
+            <MenuSubTrigger icon={<Users aria-hidden className="size-4" />} value={squadLabel(squad)}>
+              Squad size
+            </MenuSubTrigger>
+            <MenuSubContent>
+              <MenuLabel>Going as</MenuLabel>
+              <MenuRadioGroup value={String(squad ?? "any")} onValueChange={(v) => onSquad(v === "any" ? null : (Number(v) as Squad))}>
+                {SQUADS.map((o) => (
+                  <MenuRadioItem key={o.label} value={String(o.v ?? "any")}>
+                    {o.v === null ? "Any size" : o.label === "Solo" ? "Solo" : `${o.label} people`}
+                  </MenuRadioItem>
+                ))}
+              </MenuRadioGroup>
+              <p className="max-w-[210px] px-2.5 pt-1 pb-2 text-[12px] leading-4 text-fg-3">Hides events your squad can’t enter and splits team fees per person.</p>
+            </MenuSubContent>
+          </MenuSub>
+          <MenuSub>
+            <MenuSubTrigger icon={<Shapes aria-hidden className="size-4" />} value={filters.kind === "all" ? "All" : filters.kind === "technical" ? "Technical" : "Cultural"}>
+              Event type
+            </MenuSubTrigger>
+            <MenuSubContent>
+              <MenuRadioGroup value={filters.kind} onValueChange={(v) => set({ kind: v as Filters["kind"] })}>
+                <MenuRadioItem value="all" icon={<LayoutGrid aria-hidden className="size-4" />}>All types</MenuRadioItem>
+                <MenuRadioItem value="technical" icon={<Cpu aria-hidden className="size-4" />}>Technical</MenuRadioItem>
+                <MenuRadioItem value="cultural" icon={<Palette aria-hidden className="size-4" />}>Cultural</MenuRadioItem>
+              </MenuRadioGroup>
+            </MenuSubContent>
+          </MenuSub>
+          <MenuSeparator />
+          <MenuCheckboxItem checked={filters.openOnly} onCheckedChange={(c) => set({ openOnly: c === true })} icon={<Ticket aria-hidden className="size-4" />}>
+            Open for registration
+          </MenuCheckboxItem>
+          <MenuCheckboxItem checked={filters.free} onCheckedChange={(c) => set({ free: c === true })} icon={<Wallet aria-hidden className="size-4" />}>
+            Free events
+          </MenuCheckboxItem>
+          <MenuCheckboxItem checked={filters.online} onCheckedChange={(c) => set({ online: c === true })} icon={<Globe aria-hidden className="size-4" />}>
+            Online only
+          </MenuCheckboxItem>
+        </MenuContent>
+      </Menu>
+    </div>
+  );
+}
+
+/** Desktop: one removable chip per active filter, plus Clear. */
+function ActiveChips({
+  filters: f,
+  set,
+  squad,
+  onSquad,
+}: {
+  filters: Filters;
+  set: (p: Partial<Filters>) => void;
+  squad: Squad | null;
+  onSquad: (s: Squad | null) => void;
+}) {
+  const chips: { key: string; icon: typeof Users; label: string; clear: () => void }[] = [];
+  if (f.day) chips.push({ key: "day", icon: CalendarDays, label: dayLabel(f.day), clear: () => set({ day: null }) });
+  if (squad) chips.push({ key: "squad", icon: Users, label: `Going as ${squadLabel(squad).toLowerCase()}`, clear: () => onSquad(null) });
+  if (f.kind !== "all") chips.push({ key: "kind", icon: f.kind === "technical" ? Cpu : Palette, label: f.kind === "technical" ? "Technical" : "Cultural", clear: () => set({ kind: "all" }) });
+  if (f.openOnly) chips.push({ key: "open", icon: Ticket, label: "Open for registration", clear: () => set({ openOnly: false }) });
+  if (f.free) chips.push({ key: "free", icon: Wallet, label: "Free", clear: () => set({ free: false }) });
+  if (f.online) chips.push({ key: "online", icon: Globe, label: "Online", clear: () => set({ online: false }) });
+  if (!chips.length) return null;
+  return (
+    <ul className="flex flex-wrap items-center gap-2 animate-rise" aria-label="Active filters">
+      {chips.map(({ key, icon: Icon, label, clear }) => (
+        <li key={key}>
+          <span className="inline-flex h-8 items-center gap-1.5 rounded-full border border-line bg-raised pl-2.5 pr-1 text-[13px] font-medium text-fg">
+            <Icon aria-hidden className="size-3.5 text-fg-3" />
+            {label}
+            <button type="button" onClick={clear} aria-label={`Remove filter: ${label}`} className="inline-flex size-6 items-center justify-center rounded-full text-fg-3 transition-colors hover:bg-hover hover:text-fg">
+              <X aria-hidden className="size-3.5" />
+            </button>
+          </span>
+        </li>
+      ))}
+      {chips.length > 1 && (
+        <li>
+          <button
+            type="button"
+            onClick={() => {
+              set({ day: null, kind: "all", openOnly: false, free: false, online: false });
+              onSquad(null);
+            }}
+            className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium text-fg-2 transition-colors hover:bg-raised hover:text-fg"
+          >
+            <X aria-hidden className="size-3.5" />
+            Clear all
+          </button>
+        </li>
+      )}
+    </ul>
   );
 }
 
@@ -338,8 +505,8 @@ export function FilterBar({
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2.5">
         <SearchField value={filters.q} onChange={(q) => set({ q })} />
-        <div className="hidden lg:block">
-          <SquadPicker squad={squad} onSquad={onSquad} />
+        <div className="hidden lg:ml-auto lg:block">
+          <DesktopControls filters={filters} set={set} squad={squad} onSquad={onSquad} days={days} />
         </div>
         <button
           type="button"
@@ -360,19 +527,12 @@ export function FilterBar({
         </div>
       </div>
 
-      <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-none [mask-image:linear-gradient(to_right,black_92%,transparent)] lg:[mask-image:none]">
-        <DayTabs
-          days={days}
-          value={filters.day}
-          onChange={(day) => set({ day })}
-        />
-        <span aria-hidden className="mx-1 hidden h-5 w-px bg-line lg:block" />
-        <div className="hidden items-center gap-2 lg:flex">
-          <FilterChips filters={filters} set={set} />
-        </div>
-        <div className="ml-auto hidden items-center gap-2.5 lg:flex">
-          <SortSelect value={filters.sort} onChange={(sort) => set({ sort })} />
-        </div>
+      <div className="hidden lg:block">
+        <ActiveChips filters={filters} set={set} squad={squad} onSquad={onSquad} />
+      </div>
+
+      <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-none [mask-image:linear-gradient(to_right,black_92%,transparent)] lg:hidden">
+        <DayTabs days={days} value={filters.day} onChange={(day) => set({ day })} />
       </div>
 
       <Sheet

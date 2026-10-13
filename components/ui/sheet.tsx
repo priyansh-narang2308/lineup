@@ -32,16 +32,14 @@ export function Sheet({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-[2px] data-[state=open]:animate-[fade-in_200ms_ease-out] data-[state=closed]:animate-[fade-out_150ms_ease-in]" />
+        <Dialog.Overlay className="sheet-overlay fixed inset-0 z-50 bg-black/60 backdrop-blur-[2px]" />
         <Dialog.Content
           aria-describedby={description ? undefined : undefined}
           className={cn(
-            "fixed z-50 flex flex-col bg-surface shadow-[var(--shadow-overlay)] outline-none",
+            "sheet-content fixed z-50 flex flex-col bg-surface shadow-[var(--shadow-overlay)] outline-none",
             "inset-x-0 bottom-0 max-h-[92dvh] rounded-t-3xl border-t border-line",
             "md:inset-y-0 md:right-0 md:left-auto md:max-h-none md:rounded-none md:rounded-l-3xl md:border-l md:border-t-0",
             width,
-            "data-[state=open]:animate-[sheet-up_320ms_var(--ease-out)] md:data-[state=open]:animate-[sheet-in_320ms_var(--ease-out)]",
-            "data-[state=closed]:animate-[fade-out_150ms_ease-in]",
           )}
         >
           <div aria-hidden className="mx-auto mt-2.5 h-1 w-10 shrink-0 rounded-full bg-line-strong md:hidden" />
