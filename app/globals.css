@@ -174,8 +174,8 @@
 
 /* The ₹ glyph lives in Geist's latin-ext subset (~24 KB across sans + mono).
    These ~1 KB fonts contain only U+20B9, subset from the same Geist files, and are
-   inlined (CSS is inlined into the HTML) so prices render in the real typeface with
-   zero extra requests. Sources: public/fonts/geist-*-rupee.woff2. */
+   inlined into this stylesheet so prices render in the real typeface with zero
+   extra requests. Sources: public/fonts/geist-*-rupee.woff2. */
 @font-face {
   font-family: "Geist Rupee";
   src: url("data:font/woff2;base64,d09GMgABAAAAAARgABIAAAAACbwAAAP4AAHMzQAAAAAAAAAAAAAAAAAAAAAAAAAAGyAcKj9IVkFSRD9NVkFSPAZgP1NUQVSBOAA0L34RCApsfDCBPAE2AiQDCAsGAAQgBYgaByAbjwgRFaRTUXyVwM0BrotFGC4VBvk4YcUg/4jaxHub4yF4r+pVJaPs+jJwus/ml/kNWAGQE7DSl3OmN2Uix6AAQAc+UMDvoDj249/n/17V9zJwgudmLoEgjk2JffqaMbeGLKFY9wLpqY5p3cAFKWB9b59XKveRG6cyT2aSfd2NClRGjImVVjk8SLcS/gcEKrOYTVKLTN5rewzJAOvlV1BjGcp/OVFgRMgHPACWsxyJRLy2QAdkEKBbGjnwoDQiOGw3jYQwpH2TYXXVoLNS5spxpg7y5NwMaw7LxDYWiGWIIFVsssH8QB5o7iyvv/j2vzcpl4tOBOT0fAyNSgjdErUKM8lDdzXoYPeDmO/MItQac1nMajaynb0c5lgBUdsJC/R5AsWBmAvFLlLGmeQ9BDsSvwBjuRmTDYl20SCZqTjWthAyZmUjiQK15BgUSw3KekFz5/+q2fsbARtNlUKtR3VtHdmJOBOn2xeixk5Eb/ThCaI/Boi5iMEYIs4khmOE+EWMxhi5GTEeDQ6MVrQpGmLGmAmHJxAzC/G/KSBBiQItzAUoAcVgWU7aJSac8vrDcdRDr1XVROHVVx35yitZO+/iTLHP59qOn91GD/VXHV1qrrkWX3VkkYfWfWi5f3PFrRaLyQ77dtZdqz7DJY+tNXmtSTeVYiCQZEi+B8H6R6apVjvSA+pay9Guy/Lzr/6ZJMw/X30+YT568xXUvPP5lY+V5bvvPpleO+pIvoXCL/91TGgvQv5X+OffjhlaM55B6+efW/WjzHNMu48+Gu7+9gMx/LZ7+KOPZl9qzXUj8/bs6848C6+8cs4kCxx1pLuTwn9fv//yQ3eRCr99/ekHb73+Orz1ySdv/X7U78cIxDPPnrFcPcu2U5b6tbsovoBPr9xlQ4LPfmnvbUXukY+hU4LgF4TyCoYs49jtlnjmZmZL5oHUUswJOG40dlCIsgfnsUConIc02RUozOc2lIZ8RjoEgXbyh6STLRILaQUTYw/UuuMQ9KrjcNrHPxv9mrgMA6p4DIP64oWJoQPZGOauFSMmxmcYNRA/YczUrDBuJIfQ6M5F0FLnMmibnhtgRmO5E2ZS5dGYWV+eSmYR5EX+Wcm3cx1uHsX/1GqDtN1sd+nDAF2DzZBe0sgFgXSao4nSjBYNYpyNGw1t6+VzXhdR0PhAKsCHx+e7NRWFWHL/izfQuc/SVn3YbE5et/lhsjOr1ry6PUpfNA1a5wlqP6Bl7ysdMbIQHh/3rVjHM6jHw+g3PEE7wvVbqtPJq+y2/GHKDluddH+qf+/ET44gbR60bpXefxLYWeRLuifRl/TCe2Rfth+zauYz4fVOLblFFuwvu0UBCwvw/zltAQAAAA==") format("woff2");

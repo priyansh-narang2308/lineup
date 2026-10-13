@@ -4,10 +4,6 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
-  experimental: {
-    // Tailwind CSS is ~11 KB: inlining removes the render-blocking stylesheet round trip.
-    inlineCss: true,
-  },
   images: {
     // Event photos are fetched and transcoded server-side and served same-origin:
     // AVIF/WebP at the exact width, long CDN cache, and no third-party cookies
