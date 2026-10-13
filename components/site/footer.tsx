@@ -7,10 +7,6 @@ export function Footer() {
       <div className="container-page flex flex-col gap-6 py-10 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-2">
           <Logo />
-          <p className="text-[13px] text-fg-3">
-            Event data from the Render72 Events API · All times IST · No account
-            needed
-          </p>
         </div>
         <ul className="flex flex-wrap gap-x-6 gap-y-2 text-[13px] font-medium text-fg-2">
           <li>

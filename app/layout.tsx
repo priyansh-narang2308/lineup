@@ -12,7 +12,6 @@ const display = Bricolage_Grotesque({
 const sans = Geist({
   variable: "--font-geist",
   subsets: ["latin"],
-  // optional: no late font swap repaint, so body text never re-triggers LCP.
   display: "optional",
 });
 
@@ -30,7 +29,7 @@ const SITE_URL =
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Lineup — your fest, without the clashes",
+    default: "Lineup - your fest, without the clashes",
     template: "%s · Lineup",
   },
   description:

@@ -502,10 +502,11 @@ function DetailBody({ d }: { d: EventDetail; squad: Squad | null }) {
         <Section title="Prizes">
           <ul className="flex flex-col gap-2">
             {[...d.prizes]
-              .sort((a, b) => a.rank - b.rank)
+              // Ranked prizes first; special awards (rank: null) after.
+              .sort((a, b) => (a.rank ?? 99) - (b.rank ?? 99))
               .map((p) => (
                 <li
-                  key={p.rank + p.title}
+                  key={`${p.rank ?? "special"}-${p.title}`}
                   className="flex gap-3 rounded-xl border border-line-subtle bg-raised p-3.5"
                 >
                   <Trophy
@@ -517,10 +518,19 @@ function DetailBody({ d }: { d: EventDetail; squad: Squad | null }) {
                   />
                   <div className="min-w-0 flex-1">
                     <p className="flex flex-wrap items-baseline justify-between gap-2 text-[14px] font-medium">
-                      {p.title}
-                      <span className="font-mono text-[13px] text-accent">
-                        {formatINR(p.amount)}
+                      <span>
+                        {p.title}
+                        {p.rank === null && (
+                          <span className="ml-2 text-[12px] font-normal text-fg-3">
+                            Special award
+                          </span>
+                        )}
                       </span>
+                      {p.amount !== null && (
+                        <span className="font-mono text-[13px] text-accent">
+                          {formatINR(p.amount)}
+                        </span>
+                      )}
                     </p>
                     <p className="mt-0.5 text-[13px] leading-5 text-fg-3">
                       {p.description}

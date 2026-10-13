@@ -30,19 +30,6 @@ export function Hero({ data }: { data: EventsPayload | null }) {
         className="pointer-events-none absolute left-1/2 -top-105 h-225 w-350 max-w-none -translate-x-1/2 bg-[radial-gradient(closest-side,rgb(205_255_90/0.085),transparent)]"
       />
       <div className="container-page relative flex flex-col items-center pt-16 text-center sm:pt-24 lg:pt-28">
-        {data && (
-          <p className="inline-flex items-center gap-2 rounded-full border border-line bg-surface py-1.5 pl-1.5 pr-3.5 text-[12px] font-medium text-fg-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-subtle px-2 py-0.5 font-mono text-[11px] tracking-[0.08em] text-accent">
-              <span className="size-1.5 rounded-full bg-accent" />
-              LIVE
-            </span>
-            {active.length} events{range ? ` · ${range}` : ""}
-            <span className="hidden sm:inline">
-              {" "}
-              · from the Render72 events API
-            </span>
-          </p>
-        )}
         <h1
           id="hero-title"
           className="text-display-xl mt-6 max-w-[14ch] text-balance"

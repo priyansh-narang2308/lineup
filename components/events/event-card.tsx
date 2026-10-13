@@ -21,7 +21,6 @@ type Props = {
   squad?: Squad | null;
   state?: CardState;
   clashText?: string;
-  /** Either a link target (landing) or an open handler wrapper (events page). */
   href?: string;
   onOpen?: () => void;
   onIntent?: () => void;

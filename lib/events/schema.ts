@@ -58,9 +58,10 @@ export const eventDetailSchema = z.extend(eventSummarySchema, {
   rules: z.array(z.string()),
   prizes: z.array(
     z.object({
-      rank: z.number(),
+      // Special awards come through with rank: null.
+      rank: z.nullable(z.number()),
       title: z.string(),
-      amount: z.number(),
+      amount: z.nullable(z.number()),
       description: z.string(),
     }),
   ),
@@ -125,13 +126,37 @@ export function parseEventList(body: unknown): {
   return { events, invalid };
 }
 
+/** Optional list sections: a malformed item drops that item, never the whole event. */
+const LIST_SECTIONS = [
+  "gallery_images",
+  "highlights",
+  "what_to_expect",
+  "eligibility",
+  "prerequisites",
+  "rules",
+  "prizes",
+  "faqs",
+  "organizers",
+  "coordinators",
+] as const;
+
 export function parseEventDetail(body: unknown): EventDetail {
-  const r = z.object({ event: eventDetailSchema }).safeParse(body);
-  if (!r.success)
-    throw new MalformedResponseError(
-      "Event detail did not match the expected shape.",
-    );
-  return r.data.event;
+  const raw = body && typeof body === "object" ? (body as { event?: unknown }).event : undefined;
+  if (!raw || typeof raw !== "object") {
+    throw new MalformedResponseError("Event detail did not match the expected shape.");
+  }
+  const event = { ...(raw as Record<string, unknown>) };
+  const shape = eventDetailSchema.def.shape;
+  for (const key of LIST_SECTIONS) {
+    const item = (shape[key] as z.ZodMiniArray).def.element;
+    const value = event[key];
+    event[key] = Array.isArray(value) ? value.filter((v) => z.safeParse(item, v).success) : [];
+  }
+  const r = eventDetailSchema.safeParse(event);
+  if (!r.success) {
+    throw new MalformedResponseError("Event detail did not match the expected shape.");
+  }
+  return r.data;
 }
 
 const listedEventSchema = z.extend(eventSummarySchema, {
