@@ -32,7 +32,7 @@ export function Button({ variant, size, icon, iconRight, className, children, ..
 
 export function ButtonLink({ variant, size, icon, iconRight, className, children, ...rest }: Common & ComponentProps<typeof Link>) {
   return (
-    <Link className={buttonClass(variant, size, className)} {...rest}>
+    <Link prefetch={false} className={buttonClass(variant, size, className)} {...rest}>
       {icon}
       {children}
       {iconRight}

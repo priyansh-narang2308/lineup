@@ -500,6 +500,7 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
                         onOpen={() => openEvent(e.id)}
                         onIntent={() => prefetchEventDetail(e.id)}
                         imagePriority={gi === 0 && i === 0}
+                        deferImage={!(gi === 0 && i === 0)}
                         {...cardProps(e)}
                       />
                     </Reveal>

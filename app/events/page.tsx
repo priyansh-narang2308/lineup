@@ -3,6 +3,7 @@ import { Nav } from "@/components/site/nav";
 import { Footer } from "@/components/site/footer";
 import { EventsExplorer } from "@/components/events/explorer";
 import { tryGetEvents } from "@/lib/events/server";
+import { MotionProvider } from "@/components/motion/reveal";
 
 export const metadata: Metadata = {
   title: "Events",
@@ -16,7 +17,9 @@ export default async function EventsPage() {
     <>
       <Nav current="events" />
       <main id="main">
-        <EventsExplorer initial={initial} />
+        <MotionProvider>
+          <EventsExplorer initial={initial} />
+        </MotionProvider>
       </main>
       <Footer />
     </>

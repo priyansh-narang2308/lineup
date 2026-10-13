@@ -11,7 +11,6 @@ import {
 } from "@/components/landing/sections";
 import { tryGetEvents } from "@/lib/events/server";
 
-import { MotionProvider } from "@/components/motion/reveal";
 
 export default async function Home() {
   const data = await tryGetEvents();
@@ -21,7 +20,6 @@ export default async function Home() {
   return (
     <>
       <Nav current="home" />
-      <MotionProvider>
         <main id="main">
           <Hero data={data} />
           {data && <Problem data={data} />}
@@ -31,7 +29,6 @@ export default async function Home() {
           {data && <ByDay data={data} />}
           <FinalCta count={active} />
         </main>
-      </MotionProvider>
       <Footer />
     </>
   );

@@ -5,6 +5,8 @@ import "./globals.css";
 const display = Bricolage_Grotesque({
   variable: "--font-bricolage",
   subsets: ["latin"],
+  // Only SemiBold is used; a single static weight is ~half the variable file.
+  weight: ["600"],
   display: "optional",
 });
 

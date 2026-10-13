@@ -10,17 +10,17 @@ export function Footer() {
         </div>
         <ul className="flex flex-wrap gap-x-6 gap-y-2 text-[13px] font-medium text-fg-2">
           <li>
-            <Link className="hover:text-fg" href="/events">
+            <Link prefetch={false} className="hover:text-fg" href="/events">
               Events
             </Link>
           </li>
           <li>
-            <Link className="hover:text-fg" href="/#closing">
+            <Link prefetch={false} className="hover:text-fg" href="/#closing">
               Closing soon
             </Link>
           </li>
           <li>
-            <Link className="hover:text-fg" href="/events?simulate=error">
+            <Link prefetch={false} className="hover:text-fg" href="/events?simulate=error">
               Reliability lab
             </Link>
           </li>

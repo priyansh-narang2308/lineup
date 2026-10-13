@@ -30,8 +30,8 @@ export function Hero({ data }: { data: EventsPayload | null }) {
         className="pointer-events-none absolute left-1/2 -top-105 h-225 w-350 max-w-none -translate-x-1/2 bg-[radial-gradient(closest-side,rgb(205_255_90/0.085),transparent)]"
       />
       <div className="container-page relative flex flex-col items-center pt-16 text-center sm:pt-24 lg:pt-28">
-        {/* LCP text: CSS entrance animation, painted immediately on first frame. */}
-        <div className="mt-6 flex justify-center animate-rise">
+        {/* Above the fold: transform-only entrance so text paints on the first frame. */}
+        <div className="mt-6 flex justify-center animate-slide-up">
           <h1
             id="hero-title"
             className="text-display-xl max-w-[14ch] text-balance"
@@ -39,19 +39,19 @@ export function Hero({ data }: { data: EventsPayload | null }) {
             Your fest, without the clashes.
           </h1>
         </div>
-        <p className="mt-6 max-w-152 text-[17px] leading-7 text-fg-2 sm:text-[18px] sm:leading-7 animate-rise [animation-delay:60ms]">
+        <p className="mt-6 max-w-152 text-[17px] leading-7 text-fg-2 sm:text-[18px] sm:leading-7 animate-slide-up [animation-delay:60ms]">
           Most of this weekend&apos;s events overlap. Pick what you love -
           Lineup flags every clash, matches events to your squad size and keeps
           every registration deadline in view.
         </p>
-        <div className="mt-8 flex flex-col items-stretch gap-3 self-stretch sm:flex-row sm:items-center sm:self-auto animate-rise [animation-delay:120ms]">
-          <ButtonLink
+        <div className="mt-8 flex flex-col items-stretch gap-3 self-stretch sm:flex-row sm:items-center sm:self-auto animate-slide-up [animation-delay:120ms]">
+          <ButtonLink prefetch={false}
             href="/events"
             iconRight={<ArrowRight aria-hidden className="size-4" />}
           >
             Build your lineup
           </ButtonLink>
-          <ButtonLink href="/events?view=cards" variant="secondary">
+          <ButtonLink prefetch={false} href="/events?view=cards" variant="secondary">
             Browse all {events.length || ""} events
           </ButtonLink>
         </div>
@@ -178,7 +178,7 @@ function HeroPreview({ events }: { events: ListedEvent[] }) {
 
   return (
     <div className="container-page relative mt-14 sm:mt-16">
-      <div className="relative mx-auto max-w-295 animate-rise [animation-delay:180ms]">
+      <div className="relative mx-auto max-w-295 animate-slide-up [animation-delay:180ms]">
         <div
           className="relative overflow-hidden rounded-[20px] border border-line bg-surface shadow-(--shadow-overlay)"
           role="img"

@@ -8,7 +8,7 @@ export function LineupCount({ compact = false }: { compact?: boolean }) {
   const { ids } = useLineupState();
   const n = ids.length;
   return (
-    <Link
+    <Link prefetch={false}
       href="/events?panel=lineup"
       className="inline-flex h-9 items-center gap-2 whitespace-nowrap rounded-full border border-line-strong bg-elevated pl-3.5 pr-1.5 text-[14px] font-medium text-fg transition-colors hover:border-fg-3 hover:bg-hover"
       aria-label={`My lineup, ${n} ${n === 1 ? "event" : "events"}`}

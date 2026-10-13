@@ -14,6 +14,7 @@ import { sessionsFor } from "@/lib/events/derive";
 import { formatDay, weekdayShort } from "@/lib/events/time";
 import { eventImage } from "@/lib/event-image";
 import { Badge } from "@/components/ui/badge";
+import { WhenNear } from "@/components/ui/when-near";
 import { cn } from "@/lib/cn";
 
 export type CardState = "default" | "in" | "clash" | "muted";
@@ -28,6 +29,8 @@ type Props = {
   onIntent?: () => void;
   action?: ReactNode;
   imagePriority?: boolean;
+  /** Mount the image only near the viewport (events grid, below the first card). */
+  deferImage?: boolean;
   sizes?: string;
   /** Selected day filter: badge shows which part of a multi-day event falls on it. */
   day?: string | null;
@@ -43,6 +46,7 @@ export function EventCard({
   onIntent,
   action,
   imagePriority,
+  deferImage,
   day = null,
   sizes = "(min-width: 1280px) 380px, (min-width: 768px) 45vw, 92vw",
 }: Props) {
@@ -69,20 +73,25 @@ export function EventCard({
     >
       <div className="relative aspect-[3/2] overflow-hidden bg-raised">
         {src && (
+          (() => {
+            const image = (
           <Image
-            src={src}
-            alt={e.cover_image_alt || ""}
-            fill
-            sizes={sizes}
-            quality={60}
-            priority={Boolean(imagePriority)}
-            fetchPriority={imagePriority ? "high" : "auto"}
-            loading={imagePriority ? undefined : "lazy"}
-            className={cn(
-              "object-cover transition-transform duration-700 ease-[var(--ease-out)] group-hover:scale-[1.03]",
-              muted && "opacity-60 grayscale",
-            )}
-          />
+                src={src}
+                alt={e.cover_image_alt || ""}
+                fill
+                sizes={sizes}
+                quality={60}
+                priority={Boolean(imagePriority)}
+                fetchPriority={imagePriority ? "high" : "auto"}
+                loading={imagePriority ? undefined : "lazy"}
+                className={cn(
+                  "object-cover transition-transform duration-700 ease-[var(--ease-out)] group-hover:scale-[1.03]",
+                  muted && "opacity-60 grayscale",
+                )}
+              />
+            );
+            return deferImage ? <WhenNear>{image}</WhenNear> : image;
+          })()
         )}
         <div
           aria-hidden
@@ -105,7 +114,7 @@ export function EventCard({
           )}
         >
           {href ? (
-            <Link
+            <Link prefetch={false}
               href={href}
               className={titleClass}
               onMouseEnter={onIntent}

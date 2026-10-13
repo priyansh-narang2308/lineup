@@ -30,8 +30,8 @@
   --color-info-subtle: #14243d;
 
   --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: "Geist Rupee", var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono Rupee", var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --radius-xs: 6px;
   --radius-sm: 8px;
@@ -46,6 +46,8 @@
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --animate-shimmer: shimmer 1.6s linear infinite;
   --animate-rise: rise 0.5s var(--ease-out) both;
+  /* Above-the-fold entrance: transform only, so content is painted on the first frame (LCP/Speed Index safe). */
+  --animate-slide-up: slide-up 0.7s var(--ease-out) both;
 
   @keyframes shimmer {
     from {
@@ -72,6 +74,12 @@
 
 
 
+
+  @keyframes slide-up {
+    from {
+      transform: translateY(14px);
+    }
+  }
 
   @keyframes rise {
     from {
@@ -146,6 +154,41 @@
       transform: translateY(-4px) scale(0.98);
     }
   }
+
+/* Landing fade-ups: CSS scroll-driven, zero JavaScript. Unsupported browsers and
+   reduced-motion users get static, fully visible content. */
+@keyframes reveal-up {
+  from { opacity: 0; transform: translate3d(0, 28px, 0); }
+  to { opacity: 1; transform: none; }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: reveal-up linear both;
+      animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+      animation-timeline: view();
+      animation-range: entry calc(var(--reveal-i, 0) * 8%) entry calc(75% + var(--reveal-i, 0) * 10%);
+    }
+  }
+}
+
+/* The ₹ glyph lives in Geist's latin-ext subset (~24 KB across sans + mono).
+   These ~1 KB fonts contain only U+20B9, subset from the same Geist files, and are
+   inlined (CSS is inlined into the HTML) so prices render in the real typeface with
+   zero extra requests. Sources: public/fonts/geist-*-rupee.woff2. */
+@font-face {
+  font-family: "Geist Rupee";
+  src: url("data:font/woff2;base64,d09GMgABAAAAAARgABIAAAAACbwAAAP4AAHMzQAAAAAAAAAAAAAAAAAAAAAAAAAAGyAcKj9IVkFSRD9NVkFSPAZgP1NUQVSBOAA0L34RCApsfDCBPAE2AiQDCAsGAAQgBYgaByAbjwgRFaRTUXyVwM0BrotFGC4VBvk4YcUg/4jaxHub4yF4r+pVJaPs+jJwus/ml/kNWAGQE7DSl3OmN2Uix6AAQAc+UMDvoDj249/n/17V9zJwgudmLoEgjk2JffqaMbeGLKFY9wLpqY5p3cAFKWB9b59XKveRG6cyT2aSfd2NClRGjImVVjk8SLcS/gcEKrOYTVKLTN5rewzJAOvlV1BjGcp/OVFgRMgHPACWsxyJRLy2QAdkEKBbGjnwoDQiOGw3jYQwpH2TYXXVoLNS5spxpg7y5NwMaw7LxDYWiGWIIFVsssH8QB5o7iyvv/j2vzcpl4tOBOT0fAyNSgjdErUKM8lDdzXoYPeDmO/MItQac1nMajaynb0c5lgBUdsJC/R5AsWBmAvFLlLGmeQ9BDsSvwBjuRmTDYl20SCZqTjWthAyZmUjiQK15BgUSw3KekFz5/+q2fsbARtNlUKtR3VtHdmJOBOn2xeixk5Eb/ThCaI/Boi5iMEYIs4khmOE+EWMxhi5GTEeDQ6MVrQpGmLGmAmHJxAzC/G/KSBBiQItzAUoAcVgWU7aJSac8vrDcdRDr1XVROHVVx35yitZO+/iTLHP59qOn91GD/VXHV1qrrkWX3VkkYfWfWi5f3PFrRaLyQ77dtZdqz7DJY+tNXmtSTeVYiCQZEi+B8H6R6apVjvSA+pay9Guy/Lzr/6ZJMw/X30+YT568xXUvPP5lY+V5bvvPpleO+pIvoXCL/91TGgvQv5X+OffjhlaM55B6+efW/WjzHNMu48+Gu7+9gMx/LZ7+KOPZl9qzXUj8/bs6848C6+8cs4kCxx1pLuTwn9fv//yQ3eRCr99/ekHb73+Orz1ySdv/X7U78cIxDPPnrFcPcu2U5b6tbsovoBPr9xlQ4LPfmnvbUXukY+hU4LgF4TyCoYs49jtlnjmZmZL5oHUUswJOG40dlCIsgfnsUConIc02RUozOc2lIZ8RjoEgXbyh6STLRILaQUTYw/UuuMQ9KrjcNrHPxv9mrgMA6p4DIP64oWJoQPZGOauFSMmxmcYNRA/YczUrDBuJIfQ6M5F0FLnMmibnhtgRmO5E2ZS5dGYWV+eSmYR5EX+Wcm3cx1uHsX/1GqDtN1sd+nDAF2DzZBe0sgFgXSao4nSjBYNYpyNGw1t6+VzXhdR0PhAKsCHx+e7NRWFWHL/izfQuc/SVn3YbE5et/lhsjOr1ry6PUpfNA1a5wlqP6Bl7ysdMbIQHh/3rVjHM6jHw+g3PEE7wvVbqtPJq+y2/GHKDluddH+qf+/ET44gbR60bpXefxLYWeRLuifRl/TCe2Rfth+zauYz4fVOLblFFuwvu0UBCwvw/zltAQAAAA==") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+  unicode-range: U+20B9;
+}
+@font-face {
+  font-family: "Geist Mono Rupee";
+  src: url("data:font/woff2;base64,d09GMgABAAAAAAK4AA4AAAAABZgAAAJkAAGzdQAAAAAAAAAAAAAAAAAAAAAAAAAAGyAcKgZgP1NUQVREADQRCApoewE2AiQDCAsGAAQgBYRsByAbsgQAHoXp1smNwSOXcwkDW9OpY3pFUO332bNvjzBEG2B/KogWWAFbAksgT6eiiDSQZhUF6H5s3tWa7iYpAJ8MYIFRBu+B7uduv2B8hUZf36nQAYrh3YcUccRz2R83X5tkvfMuoFTHpoTbFI/JkQU+plDbA0swMPzf5rVq7uPD4kJYVaDdWNNwyeH5PbTKUNeAQLtpokKcet37i+TBKLMPctqADU2ks54JYPXgD8c2mG0+SKENACSAdbd3Dn/laXla/f3/mbwAzwIISEPTSxTNQmiVMFQIU4QO6QYh9ryig1OhrBdCjIkGUAkppgEESKgwVFhgqIgCZFlQfl2D9uUYENQYv60HIYGMCgWYDUAGVCNz7tqJHecaeOa/3t5unlrN6XfV4tuhYY+Dfd/a7d369uxsa2vm8EVjZt/W5175sxvblxyslQ/OX65e6H367JJdTvhdU84BFkDE/eA6nXrP98z511pVP+Drhp8nwLfGpDOTIM1JL9EsgeBSjbSBgUxykeHGTNEwq0xEUoQrgix1uyUschtuAB/CJB+QdHsNlQH1YuZBk9F1QrPSNOg20DLoNdhxqk9nXDaCkIPFMXPoVPLmL5mmPR7AHsH3RjLpDISZlTVrHnPPwDFHOJNCmGuSYOHKCLMjQAyCpDBRBkJ8yqqMDJ2JGAIlaWWCK+MZJ5Vxjkq7NKVoBA9JR5djZ9AvGLrwTuYqTAHXLU4XcBRJOWlLsnLWPLq159yalWSwU+ijKSmmFZimio7OOij4OC8b02Eqj76pcGmCpGcWBvIkv8x3T5Aih6nsluAq8oSBetDsfwQA") format("woff2");
+  font-display: swap;
+  unicode-range: U+20B9;
+}
 
 @layer components {
 

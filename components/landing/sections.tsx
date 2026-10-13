@@ -32,7 +32,7 @@ import { LineupToggle } from "@/components/lineup/lineup-toggle";
 import { ButtonLink } from "@/components/ui/button";
 import { RelativeDeadline } from "@/components/ui/relative-deadline";
 import { cn } from "@/lib/cn";
-import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion/css-reveal";
 
 function SectionHead({
   over,
@@ -96,8 +96,8 @@ export function Problem({ data }: { data: EventsPayload }) {
               [String(pairs), "overlapping pairs", "text-clash"],
               [String(deadlines), "registration deadlines", "text-warn"],
               [`${team.min}–${team.max}`, "people per team", "text-fg"],
-            ].map(([n, l, c]) => (
-              <StaggerItem key={l} className="flex flex-col-reverse gap-1">
+            ].map(([n, l, c], i) => (
+              <StaggerItem key={l} index={i} className="flex flex-col-reverse gap-1">
                 <dt className="text-[13px] text-fg-3">{l}</dt>
                 <dd className={cn("text-heading-l", c)}>{n}</dd>
               </StaggerItem>
@@ -181,7 +181,7 @@ export function HowItWorks() {
         title="Three steps to a weekend that fits."
       />
       <Stagger as="ol" className="mt-12 grid gap-5 md:grid-cols-3">
-        <StaggerItem as="li" className={card}>
+        <StaggerItem as="li" index={0} className={card}>
           <div className={stage} aria-hidden>
             <div className="flex items-center gap-0.5 rounded-full border border-line bg-raised p-[3px] text-[12px] font-medium">
               <span className="flex items-center gap-1.5 px-2 text-fg-3">
@@ -201,7 +201,7 @@ export function HowItWorks() {
               ))}
             </div>
             <p className="font-mono text-[13px] text-accent">
-              ₹600 / team → ₹200 each
+              ₹600 / team · ₹200 each
             </p>
           </div>
           <div className="flex flex-col gap-2">
@@ -215,7 +215,7 @@ export function HowItWorks() {
             </p>
           </div>
         </StaggerItem>
-        <StaggerItem as="li" className={card}>
+        <StaggerItem as="li" index={1} className={card}>
           <div className={stage} aria-hidden>
             <div className="flex w-full max-w-[300px] items-center gap-2.5 rounded-[10px] border border-accent bg-accent-subtle py-1 pl-1 pr-3">
               <span className="h-11 w-[3px] rounded-full bg-accent" />
@@ -251,7 +251,7 @@ export function HowItWorks() {
             </p>
           </div>
         </StaggerItem>
-        <StaggerItem as="li" className={card}>
+        <StaggerItem as="li" index={2} className={card}>
           <div className={stage} aria-hidden>
             <span className="inline-flex h-11 items-center gap-2 rounded-full bg-accent px-5 text-[14px] font-medium text-on-accent">
               <CalendarPlus className="size-4" />
@@ -292,7 +292,7 @@ export function Featured({ data }: { data: EventsPayload }) {
           over="Picked by organisers"
           title="Featured this weekend"
         />
-        <ButtonLink
+        <ButtonLink prefetch={false}
           href="/events"
           variant="secondary"
           iconRight={<ArrowRight aria-hidden className="size-4" />}
@@ -301,8 +301,8 @@ export function Featured({ data }: { data: EventsPayload }) {
         </ButtonLink>
       </div>
       <Stagger as="ul" className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {list.map((e) => (
-          <StaggerItem as="li" key={e.id} className="flex">
+        {list.map((e, i) => (
+          <StaggerItem as="li" key={e.id} index={i} className="flex">
             <div className="flex w-full flex-col [&>article]:flex-1">
               <EventCard
                 event={e}
@@ -347,7 +347,7 @@ export function ClosingSoon({
               key={e.id}
               className="border-b border-line-subtle last:border-0"
             >
-              <Link
+              <Link prefetch={false}
                 href={`/events?e=${e.id}`}
                 className="group flex items-center gap-4 px-4 py-4 transition-colors hover:bg-raised sm:gap-5 sm:px-6 sm:py-5"
               >
@@ -405,7 +405,7 @@ export function ByDay({ data }: { data: EventsPayload }) {
         title="Start with a day."
       />
       <Stagger as="ul" className="mt-12 grid gap-5 md:grid-cols-3">
-        {days.map((d) => {
+        {days.map((d, i) => {
           const list = eventsOnDay(data.events, d);
           // A non-featured cover keeps these tiles visually distinct from the Featured row.
           const used = new Set(featured(data.events, 3).map((e) => e.id));
@@ -428,8 +428,8 @@ export function ByDay({ data }: { data: EventsPayload }) {
               ? `The busiest day — ${peak.count} events at once by ${String(peak.hour).padStart(2, "0")}:00`
               : `${list.filter((e) => e.is_technical).length} technical · ${list.filter((e) => !e.is_technical).length} cultural · from ${first.schedule_summary.start_time}`;
           return (
-            <StaggerItem as="li" key={d}>
-              <Link
+            <StaggerItem as="li" key={d} index={i}>
+              <Link prefetch={false}
                 href={`/events?day=${d}`}
                 className="group relative flex h-[340px] flex-col justify-end overflow-hidden rounded-3xl border border-line-subtle p-6 sm:h-[420px] sm:p-7"
               >
@@ -485,7 +485,7 @@ export function FinalCta({ count }: { count: number }) {
           <p className="text-[17px] text-fg-2">
             {count ? `${count} events. ` : ""}Your squad. Zero clashes.
           </p>
-          <ButtonLink
+          <ButtonLink prefetch={false}
             href="/events"
             iconRight={<ArrowRight aria-hidden className="size-4" />}
           >

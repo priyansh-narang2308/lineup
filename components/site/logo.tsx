@@ -27,7 +27,7 @@ export function LogoMark({ className = "size-6" }: { className?: string }) {
 
 export function Logo() {
   return (
-    <Link
+    <Link prefetch={false}
       href="/"
       className="group inline-flex items-center gap-2.5 rounded-lg"
       aria-label="Lineup home"

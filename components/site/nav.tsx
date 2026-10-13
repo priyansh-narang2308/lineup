@@ -21,7 +21,7 @@ export function Nav({ current }: { current?: "home" | "events" }) {
         <ul className="hidden items-center gap-1 md:flex">
           {links.map((l) => (
             <li key={l.href}>
-              <Link
+              <Link prefetch={false}
                 href={l.href}
                 aria-current={
                   current === "events" && l.href === "/events"
@@ -39,7 +39,7 @@ export function Nav({ current }: { current?: "home" | "events" }) {
           <LineupCount />
           {current !== "events" && (
             <span className="hidden sm:contents">
-              <ButtonLink
+              <ButtonLink prefetch={false}
                 href="/events"
                 size="sm"
                 iconRight={<ArrowRight aria-hidden className="size-4" />}

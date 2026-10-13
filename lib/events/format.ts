@@ -2,11 +2,11 @@ import type { EventSummary, ListedEvent } from "./schema";
 import { availability, sessionsFor, type Availability } from "./derive";
 import { formatDay, formatDeadline, isoToIst, weekdayShort } from "./time";
 
-/** "10:00 – 17:00" or "Fri 18:00 → Sat 18:00" for multi-day events. */
+/** "10:00 – 17:00" or "Fri 18:00 – Sat 18:00" for multi-day events. */
 export function timeRange(e: EventSummary): string {
   const s = e.schedule_summary;
   if (s.start_date === s.end_date) return `${s.start_time} – ${s.end_time}`;
-  return `${weekdayShort(s.start_date)} ${s.start_time} → ${weekdayShort(s.end_date)} ${s.end_time}`;
+  return `${weekdayShort(s.start_date)} ${s.start_time} – ${weekdayShort(s.end_date)} ${s.end_time}`;
 }
 
 export function dateLabel(e: EventSummary): string {

@@ -4,6 +4,10 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  experimental: {
+    // Tailwind CSS is ~11 KB: inlining removes the render-blocking stylesheet round trip.
+    inlineCss: true,
+  },
   images: {
     // Event photos are fetched and transcoded server-side and served same-origin:
     // AVIF/WebP at the exact width, long CDN cache, and no third-party cookies
@@ -25,6 +29,10 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      {
+        source: "/fonts/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
       {
         source: "/:path*",
         headers: [
