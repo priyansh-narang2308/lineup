@@ -69,67 +69,9 @@
     }
   }
 
-  @keyframes sheet-in-right {
-    from {
-      transform: translate3d(100%, 0, 0);
-      opacity: 0;
-    }
 
-    to {
-      transform: translate3d(0, 0, 0);
-      opacity: 1;
-    }
-  }
 
-  @keyframes sheet-out-right {
-    from {
-      transform: translate3d(0, 0, 0);
-      opacity: 1;
-    }
 
-    to {
-      transform: translate3d(100%, 0, 0);
-      opacity: 0;
-    }
-  }
-
-  @keyframes sheet-in-up {
-    from {
-      transform: translate3d(0, 100%, 0);
-      opacity: 0;
-    }
-
-    to {
-      transform: translate3d(0, 0, 0);
-      opacity: 1;
-    }
-  }
-
-  @keyframes sheet-out-down {
-    from {
-      transform: translate3d(0, 0, 0);
-      opacity: 1;
-    }
-
-    to {
-      transform: translate3d(0, 100%, 0);
-      opacity: 0;
-    }
-  }
-
-  @keyframes menu-in {
-    from {
-      opacity: 0;
-      transform: translateY(-4px) scale(0.98);
-    }
-  }
-
-  @keyframes menu-out {
-    to {
-      opacity: 0;
-      transform: translateY(-4px) scale(0.98);
-    }
-  }
 
   @keyframes rise {
     from {
@@ -184,44 +126,40 @@
   }
 }
 
+/* Keyframes used by component classes live outside @theme: Tailwind v4 only emits
+   theme keyframes referenced by an --animate-* token, and a missing keyframe leaves
+   Radix waiting forever for animationend (sheets that never close). */
+  /* Sheets slide on transform only (GPU-composited); the overlay carries the fade. */
+@keyframes sheet-in-right { from { transform: translate3d(100%, 0, 0); } }
+@keyframes sheet-out-right { to { transform: translate3d(100%, 0, 0); } }
+@keyframes sheet-in-up { from { transform: translate3d(0, 100%, 0); } }
+@keyframes sheet-out-down { to { transform: translate3d(0, 100%, 0); } }
+@keyframes menu-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.98);
+    }
+  }
+@keyframes menu-out {
+    to {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.98);
+    }
+  }
+
 @layer components {
 
-  /* Sheets: drawer-style slide with a smooth, luxurious feel. */
-  .sheet-overlay[data-state="open"] {
-    animation: fade-in 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  .sheet-overlay[data-state="closed"] {
-    animation: fade-out 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  .sheet-content {
-    will-change: transform, opacity;
-  }
-
-  .sheet-content[data-state="open"] {
-    animation: sheet-in-up 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  .sheet-content[data-state="closed"] {
-    animation: sheet-out-down 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
+  /* Sheets: drawer-style slide. Long, decelerating entrance; shorter, accelerating exit. */
+  .sheet-overlay[data-state="open"] { animation: fade-in 500ms var(--ease-drawer) both; }
+  .sheet-overlay[data-state="closed"] { animation: fade-out 380ms cubic-bezier(0.4, 0, 0.2, 1) both; }
+  .sheet-content { will-change: transform; }
+  .sheet-content[data-state="open"] { animation: sheet-in-up 560ms var(--ease-drawer) both; }
+  .sheet-content[data-state="closed"] { animation: sheet-out-down 380ms cubic-bezier(0.4, 0, 0.6, 1) both; }
   @media (min-width: 768px) {
-    .sheet-content[data-state="open"] {
-      animation-name: sheet-in-right;
-      animation-duration: 600ms;
-      animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-      animation-fill-mode: both;
-    }
-
-    .sheet-content[data-state="closed"] {
-      animation-name: sheet-out-right;
-      animation-duration: 500ms;
-      animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-      animation-fill-mode: both;
-    }
+    .sheet-content[data-state="open"] { animation-name: sheet-in-right; }
+    .sheet-content[data-state="closed"] { animation-name: sheet-out-right; }
   }
+
 
   /* Dropdown menus */
   .menu-content {

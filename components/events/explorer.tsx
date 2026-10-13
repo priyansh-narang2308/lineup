@@ -35,6 +35,7 @@ import { StaleBanner, StatePanel } from "./states";
 import { LineupToggle } from "@/components/lineup/lineup-toggle";
 import { Button } from "@/components/ui/button";
 import { availabilityLabel } from "@/lib/events/format";
+import { Reveal } from "@/components/motion/reveal";
 
 const EventDrawer = dynamic(
   () => import("./event-drawer").then((m) => m.EventDrawer),
@@ -302,7 +303,7 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
     <div className="container-page pb-32">
       <header className="flex flex-col gap-6 pt-10 pb-6 sm:pt-14">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <div className="flex flex-col gap-2">
+          <Reveal slide onMount y={12} className="flex flex-col gap-2">
             <h1 className="text-display-m">Events</h1>
             <p className="text-[15px] text-fg-2">
               {data ? (
@@ -319,7 +320,7 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
                 "Campus fest events"
               )}
             </p>
-          </div>
+          </Reveal>
           <div className="hidden lg:block">
             <ViewSwitch view={view} onView={setView} />
           </div>
@@ -472,6 +473,7 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
                     : "flex flex-col gap-5"
                 }
               >
+                <Reveal as="div">
                 <h2 id={`day-${day}`} className="flex items-baseline gap-3">
                   <span className="text-heading-l">{weekdayLong(day)}</span>
                   <span className="font-mono text-[13px] text-fg-3">
@@ -479,9 +481,18 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
                     {list.length === 1 ? "event" : "events"}
                   </span>
                 </h2>
+                </Reveal>
                 <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                   {list.map((e, i) => (
-                    <li key={e.id} className="flex [&>article]:flex-1">
+                    <Reveal
+                      as="li"
+                      key={e.id}
+                      className="flex [&>article]:flex-1"
+                      // First row stays put so the LCP image paints immediately.
+                      slide={gi === 0 && i < 3}
+                      y={gi === 0 && i < 3 ? 0 : 22}
+                      delay={(i % 3) * 0.06}
+                    >
                       <EventCard
                         day={filters.day}
                         event={e}
@@ -491,7 +502,7 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
                         imagePriority={gi === 0 && i === 0}
                         {...cardProps(e)}
                       />
-                    </li>
+                    </Reveal>
                   ))}
                 </ul>
               </section>
