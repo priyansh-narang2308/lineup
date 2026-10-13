@@ -155,7 +155,7 @@ function buildPreview(events: ListedEvent[]) {
       continues,
     });
   }
-  // The most illustrative clash: overlaps the most picks, then the shortest event.
+
   const focus = blocks
     .filter((b) => b.kind === "clash")
     .map((b) => ({ b, c: clashesWith(b.e, picks) }))
@@ -188,14 +188,14 @@ function HeroPreview({ events }: { events: ListedEvent[] }) {
 
   return (
     <div className="container-page relative mt-14 sm:mt-16">
-      <div className="relative mx-auto max-w-[1180px] animate-rise [animation-delay:120ms]">
+      <div className="relative mx-auto max-w-295 animate-rise [animation-delay:120ms]">
         <div
-          className="relative overflow-hidden rounded-[20px] border border-line bg-surface shadow-[var(--shadow-overlay)]"
+          className="relative overflow-hidden rounded-[20px] border border-line bg-surface shadow-(--shadow-overlay)"
           role="img"
           aria-label={`Preview of the ${weekdayLong(day)} timeline: ${picks.map((e) => e.name).join(" and ")} are in the lineup; overlapping events are flagged as clashes.`}
         >
           <div className="flex h-14 items-center justify-between gap-3 border-b border-line-subtle px-4 sm:px-5">
-            <div className="flex items-center gap-0.5 rounded-full border border-line bg-raised p-[3px]">
+            <div className="flex items-center gap-0.5 rounded-full border border-line bg-raised p-0.75">
               {days.map((d) => (
                 <span
                   key={d}
@@ -232,7 +232,7 @@ function HeroPreview({ events }: { events: ListedEvent[] }) {
             </div>
           </div>
 
-          <div className="relative overflow-hidden [mask-image:linear-gradient(to_right,black_80%,transparent)] md:[mask-image:none]">
+          <div className="relative overflow-hidden mask-[linear-gradient(to_right,black_80%,transparent)] md:mask-none">
             <div
               className="relative min-w-[880px] px-5"
               style={{ height: 48 + laneCount * LANE }}

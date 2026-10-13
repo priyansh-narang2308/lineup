@@ -1,9 +1,22 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LayoutGrid, Search, SlidersHorizontal, GanttChart, Users, X } from "lucide-react";
+import {
+  LayoutGrid,
+  Search,
+  SlidersHorizontal,
+  GanttChart,
+  Users,
+  X,
+} from "lucide-react";
 import type { Squad } from "@/lib/events/derive";
-import { DEFAULT_FILTERS, activeFilterCount, type Filters, type Sort, type View } from "@/lib/events/filter";
+import {
+  DEFAULT_FILTERS,
+  activeFilterCount,
+  type Filters,
+  type Sort,
+  type View,
+} from "@/lib/events/filter";
 import { weekdayShort } from "@/lib/events/time";
 import { Sheet } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -36,14 +49,23 @@ const SORTS: { v: Sort; label: string }[] = [
   { v: "seats", label: "Fewest seats left" },
 ];
 
-const seg = "flex items-center gap-0.5 rounded-full border border-line bg-raised p-[3px]";
+const seg =
+  "flex items-center gap-0.5 rounded-full border border-line bg-raised p-[3px]";
 const segBtn = (on: boolean) =>
   cn(
     "inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium whitespace-nowrap transition-colors",
     on ? "bg-fg text-on-accent" : "text-fg-2 hover:text-fg",
   );
 
-function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
+function Chip({
+  on,
+  onClick,
+  children,
+}: {
+  on: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <button
       type="button"
@@ -51,7 +73,9 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
       onClick={onClick}
       className={cn(
         "inline-flex h-[34px] items-center rounded-full px-3.5 text-[13px] font-medium whitespace-nowrap transition-colors",
-        on ? "bg-fg text-on-accent" : "border border-line text-fg-2 hover:border-line-strong hover:text-fg",
+        on
+          ? "bg-fg text-on-accent"
+          : "border border-line text-fg-2 hover:border-line-strong hover:text-fg",
       )}
     >
       {children}
@@ -59,7 +83,15 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
   );
 }
 
-export function SquadPicker({ squad, onSquad, compact }: { squad: Squad | null; onSquad: (s: Squad | null) => void; compact?: boolean }) {
+export function SquadPicker({
+  squad,
+  onSquad,
+  compact,
+}: {
+  squad: Squad | null;
+  onSquad: (s: Squad | null) => void;
+  compact?: boolean;
+}) {
   return (
     <div role="radiogroup" aria-label="Squad size" className={seg}>
       {!compact && (
@@ -69,7 +101,14 @@ export function SquadPicker({ squad, onSquad, compact }: { squad: Squad | null; 
         </span>
       )}
       {SQUADS.map((s) => (
-        <button key={s.label} type="button" role="radio" aria-checked={squad === s.v} onClick={() => onSquad(s.v)} className={segBtn(squad === s.v)}>
+        <button
+          key={s.label}
+          type="button"
+          role="radio"
+          aria-checked={squad === s.v}
+          onClick={() => onSquad(s.v)}
+          className={segBtn(squad === s.v)}
+        >
           {s.label}
         </button>
       ))}
@@ -77,30 +116,76 @@ export function SquadPicker({ squad, onSquad, compact }: { squad: Squad | null; 
   );
 }
 
-function DayTabs({ days, value, onChange }: { days: Props["days"]; value: string | null; onChange: (d: string | null) => void }) {
+function DayTabs({
+  days,
+  value,
+  onChange,
+}: {
+  days: Props["days"];
+  value: string | null;
+  onChange: (d: string | null) => void;
+}) {
   return (
     <div role="radiogroup" aria-label="Day" className={seg}>
-      <button type="button" role="radio" aria-checked={value === null} onClick={() => onChange(null)} className={segBtn(value === null)}>
+      <button
+        type="button"
+        role="radio"
+        aria-checked={value === null}
+        onClick={() => onChange(null)}
+        className={segBtn(value === null)}
+      >
         All days
       </button>
       {days.map((d) => (
-        <button key={d.date} type="button" role="radio" aria-checked={value === d.date} onClick={() => onChange(d.date)} className={segBtn(value === d.date)}>
+        <button
+          key={d.date}
+          type="button"
+          role="radio"
+          aria-checked={value === d.date}
+          onClick={() => onChange(d.date)}
+          className={segBtn(value === d.date)}
+        >
           {weekdayShort(d.date)} {Number(d.date.slice(8))}
-          <span className={cn("font-mono text-[11px]", value === d.date ? "text-on-accent/70" : "text-fg-3")}>{d.count}</span>
+          <span
+            className={cn(
+              "font-mono text-[11px]",
+              value === d.date ? "text-on-accent/70" : "text-fg-3",
+            )}
+          >
+            {d.count}
+          </span>
         </button>
       ))}
     </div>
   );
 }
 
-export function ViewSwitch({ view, onView }: { view: View; onView: (v: View) => void }) {
+export function ViewSwitch({
+  view,
+  onView,
+}: {
+  view: View;
+  onView: (v: View) => void;
+}) {
   return (
     <div role="radiogroup" aria-label="View" className={seg}>
-      {([
-        ["cards", "Cards", LayoutGrid],
-        ["timeline", "Timeline", GanttChart],
-      ] as const).map(([v, label, Icon]) => (
-        <button key={v} type="button" role="radio" aria-checked={view === v} onClick={() => onView(v)} className={cn(segBtn(view === v), view === v && "bg-hover text-fg")}>
+      {(
+        [
+          ["cards", "Cards", LayoutGrid],
+          ["timeline", "Timeline", GanttChart],
+        ] as const
+      ).map(([v, label, Icon]) => (
+        <button
+          key={v}
+          type="button"
+          role="radio"
+          aria-checked={view === v}
+          onClick={() => onView(v)}
+          className={cn(
+            "inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium whitespace-nowrap transition-colors",
+            view === v ? "bg-hover text-fg" : "text-fg-3 hover:text-fg",
+          )}
+        >
           <Icon aria-hidden className="size-3.5" />
           {label}
         </button>
@@ -109,12 +194,25 @@ export function ViewSwitch({ view, onView }: { view: View; onView: (v: View) => 
   );
 }
 
-function SearchField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function SearchField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
   const ref = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
-      if (e.key === "/" && !e.metaKey && !e.ctrlKey && t.tagName !== "INPUT" && t.tagName !== "TEXTAREA" && !t.isContentEditable) {
+      if (
+        e.key === "/" &&
+        !e.metaKey &&
+        !e.ctrlKey &&
+        t.tagName !== "INPUT" &&
+        t.tagName !== "TEXTAREA" &&
+        !t.isContentEditable
+      ) {
         e.preventDefault();
         ref.current?.focus();
       }
@@ -137,29 +235,68 @@ function SearchField({ value, onChange }: { value: string; onChange: (v: string)
         autoComplete="off"
       />
       {value ? (
-        <button type="button" onClick={() => onChange("")} aria-label="Clear search" className="inline-flex size-7 items-center justify-center rounded-full text-fg-3 hover:bg-hover hover:text-fg">
+        <button
+          type="button"
+          onClick={() => onChange("")}
+          aria-label="Clear search"
+          className="inline-flex size-7 items-center justify-center rounded-full text-fg-3 hover:bg-hover hover:text-fg"
+        >
           <X aria-hidden className="size-3.5" />
         </button>
       ) : (
-        <kbd className="hidden h-6 items-center rounded-md border border-line-strong px-1.5 font-mono text-[12px] text-fg-3 sm:inline-flex">/</kbd>
+        <kbd className="hidden h-6 items-center rounded-md border border-line-strong px-1.5 font-mono text-[12px] text-fg-3 sm:inline-flex">
+          /
+        </kbd>
       )}
     </label>
   );
 }
 
-function FilterChips({ filters: f, set }: { filters: Filters; set: (p: Partial<Filters>) => void }) {
+function FilterChips({
+  filters: f,
+  set,
+}: {
+  filters: Filters;
+  set: (p: Partial<Filters>) => void;
+}) {
   return (
     <>
-      <Chip on={f.kind === "technical"} onClick={() => set({ kind: f.kind === "technical" ? "all" : "technical" })}>Technical</Chip>
-      <Chip on={f.kind === "cultural"} onClick={() => set({ kind: f.kind === "cultural" ? "all" : "cultural" })}>Cultural</Chip>
-      <Chip on={f.openOnly} onClick={() => set({ openOnly: !f.openOnly })}>Open for registration</Chip>
-      <Chip on={f.free} onClick={() => set({ free: !f.free })}>Free</Chip>
-      <Chip on={f.online} onClick={() => set({ online: !f.online })}>Online</Chip>
+      <Chip
+        on={f.kind === "technical"}
+        onClick={() =>
+          set({ kind: f.kind === "technical" ? "all" : "technical" })
+        }
+      >
+        Technical
+      </Chip>
+      <Chip
+        on={f.kind === "cultural"}
+        onClick={() =>
+          set({ kind: f.kind === "cultural" ? "all" : "cultural" })
+        }
+      >
+        Cultural
+      </Chip>
+      <Chip on={f.openOnly} onClick={() => set({ openOnly: !f.openOnly })}>
+        Open for registration
+      </Chip>
+      <Chip on={f.free} onClick={() => set({ free: !f.free })}>
+        Free
+      </Chip>
+      <Chip on={f.online} onClick={() => set({ online: !f.online })}>
+        Online
+      </Chip>
     </>
   );
 }
 
-function SortSelect({ value, onChange }: { value: Sort; onChange: (s: Sort) => void }) {
+function SortSelect({
+  value,
+  onChange,
+}: {
+  value: Sort;
+  onChange: (s: Sort) => void;
+}) {
   return (
     <label className="relative inline-flex h-[34px] items-center gap-2 rounded-full border border-line pl-3.5 pr-3 text-[13px] text-fg-2 focus-within:border-fg-3">
       <span className="text-fg-3">Sort</span>
@@ -178,10 +315,20 @@ function SortSelect({ value, onChange }: { value: Sort; onChange: (s: Sort) => v
   );
 }
 
-export function FilterBar({ filters, onChange, squad, onSquad, view, onView, days, resultCount }: Props) {
+export function FilterBar({
+  filters,
+  onChange,
+  squad,
+  onSquad,
+  view,
+  onView,
+  days,
+  resultCount,
+}: Props) {
   const [sheet, setSheet] = useState(false);
   const set = (p: Partial<Filters>) => onChange({ ...filters, ...p });
-  const count = activeFilterCount({ ...filters, q: "", day: null }) + (squad ? 1 : 0);
+  const count =
+    activeFilterCount({ ...filters, q: "", day: null }) + (squad ? 1 : 0);
 
   return (
     <div className="flex flex-col gap-3">
@@ -198,12 +345,20 @@ export function FilterBar({ filters, onChange, squad, onSquad, view, onView, day
         >
           <SlidersHorizontal aria-hidden className="size-4" />
           <span className="hidden sm:inline">Filters</span>
-          {count > 0 && <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 font-mono text-[11px] text-on-accent">{count}</span>}
+          {count > 0 && (
+            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 font-mono text-[11px] text-on-accent">
+              {count}
+            </span>
+          )}
         </button>
       </div>
 
       <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-none [mask-image:linear-gradient(to_right,black_92%,transparent)] lg:[mask-image:none]">
-        <DayTabs days={days} value={filters.day} onChange={(day) => set({ day })} />
+        <DayTabs
+          days={days}
+          value={filters.day}
+          onChange={(day) => set({ day })}
+        />
         <span aria-hidden className="mx-1 hidden h-5 w-px bg-line lg:block" />
         <div className="hidden items-center gap-2 lg:flex">
           <FilterChips filters={filters} set={set} />
@@ -224,7 +379,17 @@ export function FilterBar({ filters, onChange, squad, onSquad, view, onView, day
         width="md:w-[420px]"
         footer={
           <div className="flex items-center gap-3">
-            <Button variant="ghost" onClick={() => { onChange({ ...DEFAULT_FILTERS, q: filters.q, day: filters.day }); onSquad(null); }}>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                onChange({
+                  ...DEFAULT_FILTERS,
+                  q: filters.q,
+                  day: filters.day,
+                });
+                onSquad(null);
+              }}
+            >
               Reset
             </Button>
             <Button className="flex-1" onClick={() => setSheet(false)}>
@@ -236,18 +401,31 @@ export function FilterBar({ filters, onChange, squad, onSquad, view, onView, day
         <div className="flex flex-col gap-7 px-5 pb-6 sm:px-6">
           <fieldset className="flex flex-col gap-3">
             <legend className="mb-3 text-overline text-fg-3">Squad size</legend>
-            <div className="overflow-x-auto scrollbar-none"><SquadPicker squad={squad} onSquad={onSquad} compact /></div>
-            <p className="text-[13px] text-fg-3">Hides events your squad can’t enter and splits team fees per person.</p>
+            <div className="overflow-x-auto scrollbar-none">
+              <SquadPicker squad={squad} onSquad={onSquad} compact />
+            </div>
+            <p className="text-[13px] text-fg-3">
+              Hides events your squad can’t enter and splits team fees per
+              person.
+            </p>
           </fieldset>
           <fieldset>
             <legend className="mb-3 text-overline text-fg-3">Show</legend>
-            <div className="flex flex-wrap gap-2"><FilterChips filters={filters} set={set} /></div>
+            <div className="flex flex-wrap gap-2">
+              <FilterChips filters={filters} set={set} />
+            </div>
           </fieldset>
           <fieldset>
             <legend className="mb-3 text-overline text-fg-3">Sort by</legend>
             <div className="flex flex-wrap gap-2">
               {SORTS.map((s) => (
-                <Chip key={s.v} on={filters.sort === s.v} onClick={() => set({ sort: s.v })}>{s.label}</Chip>
+                <Chip
+                  key={s.v}
+                  on={filters.sort === s.v}
+                  onClick={() => set({ sort: s.v })}
+                >
+                  {s.label}
+                </Chip>
               ))}
             </div>
           </fieldset>

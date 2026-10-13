@@ -1,10 +1,17 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, Share2, X } from "lucide-react";
 import type { EventsPayload, ListedEvent } from "@/lib/events/schema";
-import { EventsFetchError, fetchEvents, prefetchEventDetail, readSimulation } from "@/lib/events/client";
-import { availability, eventDays, isPast, type Squad } from "@/lib/events/derive";
+import {
+  EventsFetchError,
+  fetchEvents,
+  prefetchEventDetail,
+  toSimulation,
+} from "@/lib/events/client";
+import { setSearch, useSearch } from "@/lib/use-url-state";
+import { availability, eventDays, type Squad } from "@/lib/events/derive";
 import { clashesWith, type Clash } from "@/lib/events/clash";
 import {
   DEFAULT_FILTERS,
@@ -31,6 +38,12 @@ import { Button } from "@/components/ui/button";
 import { availabilityLabel } from "@/lib/events/format";
 
 type Phase = "loading" | "ready" | "error";
+type Source = {
+  data: EventsPayload | null;
+  phase: Phase;
+  error: EventsFetchError | null;
+  stale: { error: EventsFetchError; at: number } | null;
+};
 
 function ageLabel(ms: number, now: number): string {
   const m = Math.round((now - ms) / 60_000);
@@ -40,137 +53,166 @@ function ageLabel(ms: number, now: number): string {
   return h < 24 ? `${h}h ago` : "over a day ago";
 }
 
+const FILTER_KEYS = [
+  "q",
+  "day",
+  "kind",
+  "free",
+  "open",
+  "online",
+  "sort",
+  "view",
+];
+
 export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
-  const [data, setData] = useState<EventsPayload | null>(initial);
-  const [phase, setPhase] = useState<Phase>(initial ? "ready" : "loading");
-  const [error, setError] = useState<EventsFetchError | null>(null);
-  const [stale, setStale] = useState<EventsFetchError | null>(null);
+  // URL is the source of truth for filters, view, drawer, panel and simulation.
+  const search = useSearch();
+  const params = useMemo(() => new URLSearchParams(search), [search]);
+  const { filters, view } = useMemo(() => paramsToFilters(params), [params]);
+  const drawerId = params.get("e");
+  const panelOpen = params.get("panel") === "lineup";
+  const sim = toSimulation(params.get("simulate"));
+
+  // Live data (seeded by the prerendered snapshot) and an isolated simulated source.
+  const [live, setLive] = useState<Source>({
+    data: initial,
+    phase: initial ? "ready" : "loading",
+    error: null,
+    stale: null,
+  });
+  const [simSrc, setSimSrc] = useState<Source>({
+    data: null,
+    phase: "loading",
+    error: null,
+    stale: null,
+  });
   const [retrying, setRetrying] = useState(false);
-  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
-  const [view, setView] = useState<View>("cards");
-  const [drawerId, setDrawerId] = useState<string | null>(null);
-  const [panelOpen, setPanelOpen] = useState(false);
-  const [shared, setShared] = useState<string[] | null>(null);
-  const [now, setNow] = useState<number | null>(null);
-  const [sim, setSim] = useState<string | null>(null);
-  const urlReady = useRef(false);
   const pushedDrawer = useRef(false);
   const { ids, squad } = useLineupState();
 
-  const load = useCallback(async (mode: "initial" | "refresh" | "retry") => {
-    if (mode === "retry") setRetrying(true);
-    if (mode === "initial") setPhase("loading");
+  const src = sim ? simSrc : live;
+  const { data, phase, error, stale } = src;
+
+  /** Only sets state after the request settles, so it is safe to start from an effect. */
+  const load = useCallback(async (simulated: boolean) => {
+    const set = simulated ? setSimSrc : setLive;
     try {
       const fresh = await fetchEvents();
-      setData(fresh);
-      setPhase("ready");
-      setError(null);
-      setStale(null);
+      set({ data: fresh, phase: "ready", error: null, stale: null });
     } catch (err) {
-      const e = err instanceof EventsFetchError ? err : new EventsFetchError("server", "Something went wrong.");
-      setData((cur) => {
-        if (cur && mode !== "initial") setStale(e);
-        else {
-          setError(e);
-          setPhase("error");
-        }
-        return cur;
-      });
+      const e =
+        err instanceof EventsFetchError
+          ? err
+          : new EventsFetchError("server", "Something went wrong.");
+      set((cur) =>
+        cur.data
+          ? { ...cur, stale: { error: e, at: Date.now() } }
+          : { ...cur, phase: "error", error: e },
+      );
     } finally {
       setRetrying(false);
     }
   }, []);
 
-  // Mount: read URL state, then revalidate the server snapshot (or load from scratch).
+  const retry = useCallback(() => {
+    setRetrying(true);
+    load(!!sim);
+  }, [load, sim]);
+
+  // Revalidate the snapshot once on load (or load from scratch); retry when connectivity returns.
   useEffect(() => {
-    const p = new URLSearchParams(window.location.search);
-    const { filters: f, view: v } = paramsToFilters(p);
-    setFilters(f);
-    setView(v);
-    setDrawerId(p.get("e"));
-    if (p.get("panel") === "lineup") setPanelOpen(true);
-    setNow(Date.now());
-    urlReady.current = true;
-
-    const simulation = readSimulation();
-    setSim(simulation);
-    if (simulation) {
-      setData(null);
-      load("initial");
-    } else if (!initial) load("initial");
-    else load("refresh");
-
-    const onPop = () => setDrawerId(new URLSearchParams(window.location.search).get("e"));
-    const onOnline = () => load("retry");
-    window.addEventListener("popstate", onPop);
-    window.addEventListener("online", onOnline);
-    return () => {
-      window.removeEventListener("popstate", onPop);
-      window.removeEventListener("online", onOnline);
+    load(!!sim);
+    const onOnline = () => {
+      setRetrying(true);
+      load(!!sim);
     };
-  }, [initial, load]);
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+  }, [load, sim]);
 
-  // Shared lineup link (?lineup=...) — offer, never overwrite silently.
-  useEffect(() => {
-    if (!data) return;
-    const param = new URLSearchParams(window.location.search).get("lineup");
-    const decoded = decodeLineup(param, data.events.map((e) => e.id));
-    setShared(decoded.length ? decoded : null);
-  }, [data]);
-
-  // Keep the URL in sync with filters (replaceState: no history spam, no re-render).
-  useEffect(() => {
-    if (!urlReady.current) return;
-    const cur = new URLSearchParams(window.location.search);
-    const next = filtersToParams(filters, view);
-    for (const k of ["e", "simulate", "lineup"]) {
-      const v = cur.get(k);
-      if (v) next.set(k, v);
-    }
-    const qs = next.toString();
-    window.history.replaceState(window.history.state, "", qs ? `?${qs}` : window.location.pathname);
-  }, [filters, view]);
+  const setFilters = useCallback(
+    (f: Filters) =>
+      setSearch((p) => {
+        FILTER_KEYS.forEach((k) => p.delete(k));
+        filtersToParams(f, view).forEach((v, k) => p.set(k, v));
+      }),
+    [view],
+  );
+  const setView = useCallback(
+    (v: View) =>
+      setSearch((p) => {
+        if (v === "cards") p.delete("view");
+        else p.set("view", v);
+      }),
+    [],
+  );
+  const setPanelOpen = useCallback(
+    (o: boolean) =>
+      setSearch((p) => (o ? p.set("panel", "lineup") : p.delete("panel"))),
+    [],
+  );
 
   const openEvent = useCallback((id: string) => {
-    const url = new URL(window.location.href);
-    url.searchParams.set("e", id);
-    window.history.pushState(window.history.state, "", url);
     pushedDrawer.current = true;
-    setPanelOpen(false);
-    setDrawerId(id);
+    setSearch((p) => {
+      p.set("e", id);
+      p.delete("panel");
+    }, "push");
   }, []);
 
   const closeEvent = useCallback(() => {
-    setDrawerId(null);
     if (pushedDrawer.current) {
       pushedDrawer.current = false;
       window.history.back();
-    } else {
-      const url = new URL(window.location.href);
-      url.searchParams.delete("e");
-      window.history.replaceState(window.history.state, "", url);
-    }
+    } else setSearch((p) => p.delete("e"));
   }, []);
 
   const events = useMemo(() => data?.events ?? [], [data]);
   const byId = useMemo(() => new Map(events.map((e) => [e.id, e])), [events]);
-  const lineupEvents = useMemo(() => ids.map((id) => byId.get(id)).filter((e): e is ListedEvent => !!e), [ids, byId]);
+  const lineupEvents = useMemo(
+    () => ids.map((id) => byId.get(id)).filter((e): e is ListedEvent => !!e),
+    [ids, byId],
+  );
   const missing = data ? ids.filter((id) => !byId.has(id)).length : 0;
-  const lineupIds = useMemo(() => new Set(lineupEvents.map((e) => e.id)), [lineupEvents]);
+  const lineupIds = useMemo(
+    () => new Set(lineupEvents.map((e) => e.id)),
+    [lineupEvents],
+  );
   const clashMap = useMemo(() => {
     const m = new Map<string, Clash[]>();
-    for (const e of events) if (!lineupIds.has(e.id)) m.set(e.id, clashesWith(e, lineupEvents));
+    for (const e of events)
+      if (!lineupIds.has(e.id)) m.set(e.id, clashesWith(e, lineupEvents));
     return m;
   }, [events, lineupEvents, lineupIds]);
 
+  const shared = useMemo(() => {
+    const decoded = decodeLineup(
+      params.get("lineup"),
+      events.map((e) => e.id),
+    );
+    return decoded.length ? decoded : null;
+  }, [params, events]);
+  const dismissShared = () => setSearch((p) => p.delete("lineup"));
+
   const days = useMemo(() => festDays(events), [events]);
   const dayCounts = useMemo(
-    () => days.map((d) => ({ date: d, count: events.filter((e) => !isPast(e) && eventDays(e).includes(d)).length })),
+    () =>
+      days.map((d) => ({
+        date: d,
+        count: events.filter(
+          (e) => e.event_status === "ACTIVE" && eventDays(e).includes(d),
+        ).length,
+      })),
     [days, events],
   );
-  const results = useMemo(() => sortEvents(applyFilters(events, filters, squad), filters.sort, squad), [events, filters, squad]);
+  const results = useMemo(
+    () => sortEvents(applyFilters(events, filters, squad), filters.sort, squad),
+    [events, filters, squad],
+  );
   const grouped = useMemo(() => groupByDay(results), [results]);
-  const upcomingCount = events.filter((e) => !isPast(e)).length;
+  const upcomingCount = events.filter(
+    (e) => e.event_status === "ACTIVE",
+  ).length;
   const filterCount = activeFilterCount(filters) + (squad ? 1 : 0);
 
   const resetFilters = () => {
@@ -183,7 +225,13 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
     const clashes = clashMap.get(e.id) ?? [];
     const avail = availability(e);
     return {
-      state: inLineup ? ("in" as const) : clashes.length ? ("clash" as const) : avail !== "open" ? ("muted" as const) : ("default" as const),
+      state: inLineup
+        ? ("in" as const)
+        : clashes.length
+          ? ("clash" as const)
+          : avail !== "open"
+            ? ("muted" as const)
+            : ("default" as const),
       clashText: clashes.length
         ? `Overlaps ${clashes[0].with.name.split(":")[0]} for ${formatDuration(clashes[0].minutes)}${clashes.length > 1 ? ` · +${clashes.length - 1} more` : ""}`
         : undefined,
@@ -191,8 +239,16 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
         <LineupToggle
           id={e.id}
           name={e.name}
-          clashLabel={clashes.length ? `clashes with ${clashes.length}` : undefined}
-          unavailableLabel={avail !== "open" ? (avail === "completed" ? "Ended" : availabilityLabel[avail]) : undefined}
+          clashLabel={
+            clashes.length ? `clashes with ${clashes.length}` : undefined
+          }
+          unavailableLabel={
+            avail !== "open"
+              ? avail === "completed"
+                ? "Ended"
+                : availabilityLabel[avail]
+              : undefined
+          }
         />
       ),
     };
@@ -209,7 +265,11 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
             <p className="text-[15px] text-fg-2">
               {data ? (
                 <>
-                  {upcomingCount} upcoming{days.length ? ` · ${formatDayMonth(days[0]).split(" ")[0]}–${formatDayMonth(days[days.length - 1])}` : ""} · times in IST
+                  {upcomingCount} upcoming
+                  {days.length
+                    ? ` · ${formatDayMonth(days[0]).split(" ")[0]}–${formatDayMonth(days[days.length - 1])}`
+                    : ""}{" "}
+                  · times in IST
                 </>
               ) : phase === "loading" ? (
                 <span className="skeleton inline-block h-4 w-56 rounded align-middle" />
@@ -224,8 +284,15 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
         </div>
         {sim && (
           <p className="flex flex-wrap items-center gap-2 rounded-xl border border-info/30 bg-info-subtle/50 px-4 py-2.5 text-[13px] text-fg-2">
-            <span className="font-medium text-info">Reliability lab</span> Simulating “{sim}” in the browser data layer — the real API is not touched.
-            <a href="/events" className="ml-auto font-medium text-fg underline-offset-4 hover:underline">Exit</a>
+            <span className="font-medium text-info">Reliability lab</span>{" "}
+            Simulating “{sim}” in the browser data layer — the real API is not
+            touched.
+            <a
+              href="/events"
+              className="ml-auto font-medium text-fg underline-offset-4 hover:underline"
+            >
+              Exit
+            </a>
           </p>
         )}
         <FilterBar
@@ -241,62 +308,111 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
       </header>
 
       <p className="sr-only" aria-live="polite">
-        {phase === "loading" ? "Loading events" : data ? `${results.length} events shown` : ""}
+        {phase === "loading"
+          ? "Loading events"
+          : data
+            ? `${results.length} events shown`
+            : ""}
       </p>
 
       <div className="flex flex-col gap-6">
         {stale && data && (
           <StaleBanner
-            reason={stale.message}
-            ageLabel={ageLabel(data.fetchedAt, now ?? data.fetchedAt)}
-            onRetry={() => load("retry")}
+            reason={stale.error.message}
+            ageLabel={ageLabel(data.fetchedAt, stale.at)}
+            onRetry={retry}
             retrying={retrying}
           />
         )}
         {shared && (
           <div className="flex flex-wrap items-center gap-3 rounded-xl border border-accent/40 bg-accent-subtle/60 py-2.5 pl-4 pr-2 text-[13px]">
             <Share2 aria-hidden className="size-4 text-accent" />
-            <p className="min-w-0 flex-1">Someone shared a lineup with {shared.length} {shared.length === 1 ? "event" : "events"}.</p>
-            <Button size="sm" onClick={() => { lineup.replace([...new Set([...ids, ...shared])]); setShared(null); setPanelOpen(true); }}>
+            <p className="min-w-0 flex-1">
+              Someone shared a lineup with {shared.length}{" "}
+              {shared.length === 1 ? "event" : "events"}.
+            </p>
+            <Button
+              size="sm"
+              onClick={() => {
+                lineup.replace([...new Set([...ids, ...shared])]);
+                setSearch((p) => {
+                  p.delete("lineup");
+                  p.set("panel", "lineup");
+                });
+              }}
+            >
               Add to my lineup
             </Button>
-            <button type="button" onClick={() => setShared(null)} aria-label="Dismiss" className="inline-flex size-8 items-center justify-center rounded-full text-fg-3 hover:bg-hover hover:text-fg">
+            <button
+              type="button"
+              onClick={dismissShared}
+              aria-label="Dismiss"
+              className="inline-flex size-8 items-center justify-center rounded-full text-fg-3 hover:bg-hover hover:text-fg"
+            >
               <X aria-hidden className="size-4" />
             </button>
           </div>
         )}
         {data && data.invalid > 0 && (
-          <p className="text-[13px] text-fg-3">{data.invalid} {data.invalid === 1 ? "event was" : "events were"} hidden because the API returned incomplete data.</p>
+          <p className="text-[13px] text-fg-3">
+            {data.invalid} {data.invalid === 1 ? "event was" : "events were"}{" "}
+            hidden because the API returned incomplete data.
+          </p>
         )}
 
         {phase === "loading" && !data ? (
-          <div aria-busy="true" className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }, (_, i) => <EventCardSkeleton key={i} />)}
+          <div
+            aria-busy="true"
+            className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {Array.from({ length: 6 }, (_, i) => (
+              <EventCardSkeleton key={i} />
+            ))}
           </div>
         ) : phase === "error" && !data && error ? (
           <div className="py-10">
             <StatePanel
               type={error.kind}
               message={error.message}
-              onRetry={() => load("retry")}
+              onRetry={retry}
               retrying={retrying}
-              secondary={sim ? <Button size="sm" variant="ghost" onClick={() => (window.location.href = "/events")}>Exit simulation</Button> : undefined}
+              secondary={
+                sim ? (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => (window.location.href = "/events")}
+                  >
+                    Exit simulation
+                  </Button>
+                ) : undefined
+              }
             />
           </div>
         ) : data && events.length === 0 ? (
-          <div className="py-10"><StatePanel type="empty" onRetry={() => load("retry")} retrying={retrying} /></div>
+          <div className="py-10">
+            <StatePanel type="empty" onRetry={retry} retrying={retrying} />
+          </div>
         ) : results.length === 0 ? (
           <div className="py-10">
             <StatePanel
               type="no_matches"
-              message={filters.q ? `Nothing matches “${filters.q}” with the current filters.` : undefined}
-              secondary={<Button size="sm" onClick={resetFilters}>Clear {filterCount > 1 ? `${filterCount} filters` : "filters"}</Button>}
+              message={
+                filters.q
+                  ? `Nothing matches “${filters.q}” with the current filters.`
+                  : undefined
+              }
+              secondary={
+                <Button size="sm" onClick={resetFilters}>
+                  Clear {filterCount > 1 ? `${filterCount} filters` : "filters"}
+                </Button>
+              }
             />
           </div>
         ) : view === "timeline" ? (
           <TimelineView
             days={filters.day ? [filters.day] : days}
-            events={results.filter((e) => !isPast(e))}
+            events={results.filter((e) => e.event_status === "ACTIVE")}
             lineupIds={lineupIds}
             clashMap={clashMap}
             onOpen={openEvent}
@@ -305,10 +421,17 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
         ) : (
           <div className="flex flex-col gap-14">
             {grouped.upcoming.map(({ day, events: list }, gi) => (
-              <section key={day} aria-labelledby={`day-${day}`} className="flex flex-col gap-5 [content-visibility:auto] [contain-intrinsic-size:auto_900px]">
+              <section
+                key={day}
+                aria-labelledby={`day-${day}`}
+                className="flex flex-col gap-5 [content-visibility:auto] [contain-intrinsic-size:auto_900px]"
+              >
                 <h2 id={`day-${day}`} className="flex items-baseline gap-3">
                   <span className="text-heading-l">{weekdayLong(day)}</span>
-                  <span className="font-mono text-[13px] text-fg-3">{formatDayMonth(day)} · {list.length} {list.length === 1 ? "event" : "events"}</span>
+                  <span className="font-mono text-[13px] text-fg-3">
+                    {formatDayMonth(day)} · {list.length}{" "}
+                    {list.length === 1 ? "event" : "events"}
+                  </span>
                 </h2>
                 <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                   {list.map((e, i) => (
@@ -329,13 +452,27 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
             {grouped.past.length > 0 && (
               <details className="group rounded-2xl border border-line-subtle bg-surface">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-[15px] font-medium">
-                  <span>Already happened <span className="font-mono text-[13px] text-fg-3">· {grouped.past.length}</span></span>
-                  <ChevronDown aria-hidden className="size-4 text-fg-3 transition-transform group-open:rotate-180" />
+                  <span>
+                    Past &amp; closed{" "}
+                    <span className="font-mono text-[13px] text-fg-3">
+                      · {grouped.past.length}
+                    </span>
+                  </span>
+                  <ChevronDown
+                    aria-hidden
+                    className="size-4 text-fg-3 transition-transform group-open:rotate-180"
+                  />
                 </summary>
                 <ul className="grid gap-5 px-5 pb-5 sm:grid-cols-2 lg:grid-cols-3">
                   {grouped.past.map((e) => (
                     <li key={e.id} className="flex [&>article]:flex-1">
-                      <EventCard event={e} squad={squad} onOpen={() => openEvent(e.id)} {...cardProps(e)} state="muted" />
+                      <EventCard
+                        event={e}
+                        squad={squad}
+                        onOpen={() => openEvent(e.id)}
+                        {...cardProps(e)}
+                        state="muted"
+                      />
                     </li>
                   ))}
                 </ul>
@@ -356,7 +493,14 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
           onClose={closeEvent}
         />
       )}
-      <LineupPanel events={lineupEvents} missing={missing} squad={squad} open={panelOpen} onOpenChange={setPanelOpen} onOpenEvent={openEvent} />
+      <LineupPanel
+        events={lineupEvents}
+        missing={missing}
+        squad={squad}
+        open={panelOpen}
+        onOpenChange={setPanelOpen}
+        onOpenEvent={openEvent}
+      />
     </div>
   );
 }

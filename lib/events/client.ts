@@ -42,10 +42,13 @@ const SIMULATIONS: Simulation[] = [
   "notfound",
 ];
 
+export function toSimulation(v: string | null): Simulation | null {
+  return v && (SIMULATIONS as string[]).includes(v) ? (v as Simulation) : null;
+}
+
 export function readSimulation(): Simulation | null {
   if (typeof window === "undefined") return null;
-  const v = new URLSearchParams(window.location.search).get("simulate");
-  return v && (SIMULATIONS as string[]).includes(v) ? (v as Simulation) : null;
+  return toSimulation(new URLSearchParams(window.location.search).get("simulate"));
 }
 
 const ATTEMPT_TIMEOUT_MS = 8000;

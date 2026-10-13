@@ -6,12 +6,11 @@ import { tryGetEvents } from "@/lib/events/server";
 
 export const metadata: Metadata = {
   title: "Events",
-  description: "Browse every campus fest event, filter by day, squad size and price, and build a clash-free lineup.",
+  description:
+    "Browse every campus fest event, filter by day, squad size and price, and build a clash-free lineup.",
 };
 
 export default async function EventsPage() {
-  // Prerendered snapshot (revalidates every 5 min). The client revalidates once
-  // on load and owns every loading / stale / error state from there.
   const initial = await tryGetEvents();
   return (
     <>

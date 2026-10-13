@@ -3,7 +3,6 @@ import {
   availability,
   eventDays,
   fitsSquad,
-  isPast,
   seatsLeft,
   type Squad,
 } from "./derive";
@@ -98,15 +97,16 @@ export function sortEvents(
   return list.sort((a, b) => by[sort](a, b) || a.name.localeCompare(b.name));
 }
 
-/** Upcoming events grouped by first day; past events returned separately. */
+/** Upcoming events grouped by first day; completed and organiser-closed events returned separately. */
 export function groupByDay(events: ListedEvent[]): {
   upcoming: { day: string; events: ListedEvent[] }[];
   past: ListedEvent[];
 } {
-  const past = events.filter(isPast);
+  const inactive = (e: ListedEvent) => e.event_status !== "ACTIVE";
+  const past = events.filter(inactive);
   const map = new Map<string, ListedEvent[]>();
   for (const e of events) {
-    if (isPast(e)) continue;
+    if (inactive(e)) continue;
     const d = e.schedule_summary.start_date;
     (map.get(d) ?? map.set(d, []).get(d)!).push(e);
   }
