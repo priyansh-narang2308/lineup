@@ -93,9 +93,17 @@ function buildPreview(events: ListedEvent[]) {
   for (const e of others) {
     const [start, end] = span(e);
     const c = clashesWith(e, picks);
-    const unavailable = availability(e) !== "open";
     const s = sessionOn(e);
-    const continues = sessionsFor(e)[0].event_date !== day ? `continues from ${weekdayShort(sessionsFor(e)[0].event_date)}` : undefined;
+    const unavailable = availability(e) !== "open";
+    const all = sessionsFor(e);
+    const idx = all.findIndex((x) => x.event_date === day);
+    const continues = e.sessions_approximate
+      ? "times approx."
+      : idx > 0 && s.start_time === "00:00" && all[idx - 1].end_time === "23:59"
+        ? `overnight from ${weekdayShort(all[idx - 1].event_date)}`
+        : all.length > 1
+          ? `day ${idx + 1} of ${all.length}`
+          : undefined;
     blocks.push({
       e,
       start,
@@ -110,10 +118,19 @@ function buildPreview(events: ListedEvent[]) {
       continues,
     });
   }
+  // The most illustrative clash: overlaps the most picks, then the shortest event.
   const focus = blocks
     .filter((b) => b.kind === "clash")
     .map((b) => ({ b, c: clashesWith(b.e, picks) }))
-    .sort((x, y) => y.c.length - x.c.length || y.c[0].minutes - x.c[0].minutes)[0];
+    .sort((x, y) => y.c.length - x.c.length || x.b.end - x.b.start - (y.b.end - y.b.start))[0];
+  if (focus) {
+    // Pin it directly under the lineup lane; shift everything else down.
+    for (const b of blocks) if (b !== focus.b && b.lane >= 1) b.lane += 1;
+    focus.b.lane = picks.length ? 1 : 0;
+    // Close any lane gap left behind.
+    const used = [...new Set(blocks.map((b) => b.lane))].sort((a, b) => a - b);
+    for (const b of blocks) b.lane = used.indexOf(b.lane);
+  }
 
   return { day, AX0, AX1, ax0, picks, blocks, focus, peak };
 }

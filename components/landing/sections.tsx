@@ -81,7 +81,7 @@ export function Problem({ data }: { data: EventsPayload }) {
               <div key={s.hour} role="listitem" aria-label={`${hh(s.hour)}: ${s.count} events`} className="flex h-full flex-1 flex-col items-center justify-end gap-2">
                 <span className={cn("font-mono text-[11px]", s.count === max ? "text-clash" : "text-fg-3")}>{s.count}</span>
                 <span
-                  className={cn("w-full rounded-md", s.count === max ? "bg-clash" : s.count >= max - 1 ? "bg-clash/50" : "bg-elevated")}
+                  className={cn("w-full rounded-md", s.count === max ? "bg-clash" : s.count >= max - 1 ? "bg-clash/30" : "bg-hover")}
                   style={{ height: `${Math.max(2, (s.count / max) * 78)}%` }}
                 />
                 <span className="font-mono text-[10px] text-fg-3 sm:text-[11px]">{String(s.hour).padStart(2, "0")}</span>
@@ -228,7 +228,9 @@ export function ByDay({ data }: { data: EventsPayload }) {
       <ul className="mt-12 grid gap-5 md:grid-cols-3">
         {days.map((d) => {
           const list = eventsOnDay(data.events, d);
-          const cover = list.find((e) => e.is_featured) ?? list[0];
+          // A non-featured cover keeps these tiles visually distinct from the Featured row.
+          const used = new Set(featured(data.events, 3).map((e) => e.id));
+          const cover = list.find((e) => !used.has(e.id) && !e.is_featured && e.schedule_summary.start_date === d) ?? list.find((e) => !used.has(e.id)) ?? list[0];
           const first = [...list].sort((a, b) => a.schedule_summary.start_time.localeCompare(b.schedule_summary.start_time))[0];
           const note =
             d === peak.day

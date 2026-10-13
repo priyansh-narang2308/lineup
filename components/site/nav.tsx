@@ -31,9 +31,11 @@ export function Nav({ current }: { current?: "home" | "events" }) {
         <div className="flex items-center gap-2.5">
           <LineupCount />
           {current !== "events" && (
-            <ButtonLink href="/events" size="sm" className="hidden sm:inline-flex" iconRight={<ArrowRight aria-hidden className="size-4" />}>
-              Browse events
-            </ButtonLink>
+            <span className="hidden sm:contents">
+              <ButtonLink href="/events" size="sm" iconRight={<ArrowRight aria-hidden className="size-4" />}>
+                Browse events
+              </ButtonLink>
+            </span>
           )}
         </div>
       </nav>

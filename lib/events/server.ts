@@ -22,7 +22,19 @@ export class UpstreamError extends Error {
   }
 }
 
+/** One retry with a short backoff for transient failures (network, timeout, 5xx). */
 async function upstream(path: string): Promise<unknown> {
+  try {
+    return await upstreamOnce(path);
+  } catch (err) {
+    const transient = err instanceof UpstreamError && (err.code === "timeout" || err.code === "network" || (err.code === "http" && err.status >= 500));
+    if (!transient) throw err;
+    await new Promise((r) => setTimeout(r, 300));
+    return upstreamOnce(path);
+  }
+}
+
+async function upstreamOnce(path: string): Promise<unknown> {
   let res: Response;
   try {
     res = await fetch(`${API_BASE}${path}`, {

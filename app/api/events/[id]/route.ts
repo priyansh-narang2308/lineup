@@ -1,6 +1,5 @@
 import { getEventDetail, UpstreamError, UUID_RE } from "@/lib/events/server";
 
-/** GET /api/events/:id — full event detail, validated, CDN-cached. */
 export async function GET(
   _req: Request,
   ctx: RouteContext<"/api/events/[id]">,
