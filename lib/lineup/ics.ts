@@ -2,8 +2,6 @@ import type { ListedEvent } from "@/lib/events/schema";
 import { sessionsFor } from "@/lib/events/derive";
 import { sessionInterval } from "@/lib/events/time";
 
-/** RFC 5545 calendar for the lineup. Times are emitted in UTC (Z) from IST wall-clock. */
-
 const pad = (n: number) => String(n).padStart(2, "0");
 function utcStamp(epochMin: number): string {
   const d = new Date(epochMin * 60_000);
@@ -11,10 +9,13 @@ function utcStamp(epochMin: number): string {
 }
 
 function escapeText(s: string): string {
-  return s.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+  return s
+    .replace(/\\/g, "\\\\")
+    .replace(/;/g, "\\;")
+    .replace(/,/g, "\\,")
+    .replace(/\r?\n/g, "\\n");
 }
 
-/** Fold lines longer than 75 octets (approximate by chars; content is mostly ASCII). */
 function fold(line: string): string {
   if (line.length <= 75) return line;
   const parts: string[] = [];
@@ -30,16 +31,32 @@ function fold(line: string): string {
 
 export function buildIcs(
   events: ListedEvent[],
-  opts: { venues?: Record<string, Record<string, string>>; url?: string; now?: Date } = {},
+  opts: {
+    venues?: Record<string, Record<string, string>>;
+    url?: string;
+    now?: Date;
+  } = {},
 ): string {
-  const stamp = utcStamp(Math.floor((opts.now ?? new Date()).getTime() / 60_000));
-  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Lineup//Render72//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH", "X-WR-CALNAME:My Lineup"];
+  const stamp = utcStamp(
+    Math.floor((opts.now ?? new Date()).getTime() / 60_000),
+  );
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Lineup//Render72//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "X-WR-CALNAME:My Lineup",
+  ];
   for (const e of events) {
     const sessions = sessionsFor(e);
     sessions.forEach((s, i) => {
       const [start, end] = sessionInterval(s);
       const venue = opts.venues?.[e.id]?.[s.event_date];
-      const title = sessions.length > 1 ? `${e.name} (day ${i + 1} of ${sessions.length})` : e.name;
+      const title =
+        sessions.length > 1
+          ? `${e.name} (day ${i + 1} of ${sessions.length})`
+          : e.name;
       lines.push(
         "BEGIN:VEVENT",
         `UID:${e.id}-${i}@lineup`,
@@ -47,7 +64,9 @@ export function buildIcs(
         `DTSTART:${utcStamp(start)}`,
         `DTEND:${utcStamp(end)}`,
         fold(`SUMMARY:${escapeText(title)}`),
-        fold(`DESCRIPTION:${escapeText(e.blurb + (opts.url ? `\n\n${opts.url}` : ""))}`),
+        fold(
+          `DESCRIPTION:${escapeText(e.blurb + (opts.url ? `\n\n${opts.url}` : ""))}`,
+        ),
         ...(venue ? [fold(`LOCATION:${escapeText(venue)}`)] : []),
         "END:VEVENT",
       );

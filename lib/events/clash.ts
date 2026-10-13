@@ -3,7 +3,6 @@ import { intervalsFor } from "./derive";
 
 export type Clash = { with: ListedEvent; minutes: number };
 
-/** Total overlapping minutes between two events, summed across their real sessions. */
 export function overlapMinutes(a: ListedEvent, b: ListedEvent): number {
   if (a.id === b.id) return 0;
   const A = intervalsFor(a);
@@ -18,8 +17,10 @@ export function overlapMinutes(a: ListedEvent, b: ListedEvent): number {
   return total;
 }
 
-/** Clashes between `event` and every event in the lineup (excluding itself). */
-export function clashesWith(event: ListedEvent, lineup: ListedEvent[]): Clash[] {
+export function clashesWith(
+  event: ListedEvent,
+  lineup: ListedEvent[],
+): Clash[] {
   const out: Clash[] = [];
   for (const other of lineup) {
     if (other.id === event.id) continue;
@@ -30,7 +31,9 @@ export function clashesWith(event: ListedEvent, lineup: ListedEvent[]): Clash[] 
 }
 
 /** Every unordered clashing pair inside the lineup. */
-export function lineupConflicts(lineup: ListedEvent[]): { a: ListedEvent; b: ListedEvent; minutes: number }[] {
+export function lineupConflicts(
+  lineup: ListedEvent[],
+): { a: ListedEvent; b: ListedEvent; minutes: number }[] {
   const out: { a: ListedEvent; b: ListedEvent; minutes: number }[] = [];
   for (let i = 0; i < lineup.length; i++) {
     for (let j = i + 1; j < lineup.length; j++) {
@@ -42,8 +45,12 @@ export function lineupConflicts(lineup: ListedEvent[]): { a: ListedEvent; b: Lis
 }
 
 /** Greedy lane packing for the day timeline. Returns lane index per event id. */
-export function packLanes(events: { id: string; start: number; end: number }[]): Map<string, number> {
-  const sorted = [...events].sort((a, b) => a.start - b.start || b.end - b.start - (a.end - a.start));
+export function packLanes(
+  events: { id: string; start: number; end: number }[],
+): Map<string, number> {
+  const sorted = [...events].sort(
+    (a, b) => a.start - b.start || b.end - b.start - (a.end - a.start),
+  );
   const laneEnds: number[] = [];
   const lanes = new Map<string, number>();
   for (const e of sorted) {

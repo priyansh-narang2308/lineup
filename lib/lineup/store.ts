@@ -3,12 +3,6 @@
 import { useSyncExternalStore } from "react";
 import type { Squad } from "@/lib/events/derive";
 
-/**
- * Tiny persisted store for the personal lineup and squad size.
- * localStorage only (no account), synced across tabs via the storage event.
- * All reads are guarded — private mode or blocked storage degrades to memory.
- */
-
 type State = { ids: string[]; squad: Squad | null };
 const KEY = "lineup:v1";
 const EMPTY: State = { ids: [], squad: null };
@@ -22,8 +16,11 @@ function read(): State {
     const raw = window.localStorage.getItem(KEY);
     if (!raw) return EMPTY;
     const v = JSON.parse(raw) as Partial<State>;
-    const ids = Array.isArray(v.ids) ? v.ids.filter((x): x is string => typeof x === "string").slice(0, 60) : [];
-    const squad = v.squad && [1, 2, 3, 4, 5].includes(v.squad) ? (v.squad as Squad) : null;
+    const ids = Array.isArray(v.ids)
+      ? v.ids.filter((x): x is string => typeof x === "string").slice(0, 60)
+      : [];
+    const squad =
+      v.squad && [1, 2, 3, 4, 5].includes(v.squad) ? (v.squad as Squad) : null;
     return { ids: [...new Set(ids)], squad };
   } catch {
     return EMPTY;
@@ -34,9 +31,7 @@ function write(next: State) {
   state = next;
   try {
     window.localStorage.setItem(KEY, JSON.stringify(next));
-  } catch {
-    /* storage unavailable — keep in memory */
-  }
+  } catch {}
   listeners.forEach((l) => l());
 }
 
@@ -72,7 +67,10 @@ export const lineup = {
   toggle(id: string) {
     ensureHydrated();
     const has = state.ids.includes(id);
-    write({ ...state, ids: has ? state.ids.filter((x) => x !== id) : [...state.ids, id] });
+    write({
+      ...state,
+      ids: has ? state.ids.filter((x) => x !== id) : [...state.ids, id],
+    });
     return !has;
   },
   remove(id: string) {
@@ -93,7 +91,6 @@ export const lineup = {
   },
 };
 
-/** Share links carry 8-char id prefixes: /events?lineup=dff53692.a30d863a */
 export function encodeLineup(ids: string[]): string {
   return ids.map((id) => id.slice(0, 8)).join(".");
 }
@@ -103,7 +100,9 @@ export function decodeLineup(param: string | null, allIds: string[]): string[] {
   const prefixes = param.split(".").filter((p) => /^[0-9a-f]{8}$/i.test(p));
   const out: string[] = [];
   for (const p of prefixes) {
-    const matches = allIds.filter((id) => id.toLowerCase().startsWith(p.toLowerCase()));
+    const matches = allIds.filter((id) =>
+      id.toLowerCase().startsWith(p.toLowerCase()),
+    );
     if (matches.length === 1) out.push(matches[0]);
   }
   return [...new Set(out)];
