@@ -206,10 +206,7 @@ export function EventDrawer({
           <div className="relative aspect-[16/9] w-full overflow-hidden bg-raised md:rounded-tl-3xl">
             {(detail?.banner_image_url || e.cover_image_url) && (
               <Image
-                src={eventImage(
-                  detail?.banner_image_url || e.cover_image_url,
-                  "16:9",
-                )}
+                src={eventImage(detail?.banner_image_url || e.cover_image_url)}
                 alt={detail?.banner_image_alt || e.cover_image_alt || ""}
                 fill
                 sizes="(min-width: 768px) 560px, 100vw"
@@ -451,7 +448,7 @@ function DetailBody({ d }: { d: EventDetail; squad: Squad | null }) {
               className="relative aspect-[3/2] overflow-hidden rounded-xl bg-raised"
             >
               <Image
-                src={eventImage(src, "3:2")}
+                src={eventImage(src)}
                 alt={`${d.name} — photo ${i + 1}`}
                 fill
                 sizes="280px"

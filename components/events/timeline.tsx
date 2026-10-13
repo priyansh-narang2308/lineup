@@ -96,7 +96,7 @@ const blockTone = {
   in: "border-accent bg-accent-subtle hover:bg-[#2e3b12]",
   clash:
     "border-dashed border-clash/80 bg-clash-subtle/60 hover:bg-clash-subtle",
-  muted: "border-line bg-raised opacity-50 hover:opacity-80",
+  muted: "border-line-subtle bg-surface hover:border-line hover:bg-raised",
   default: "border-line bg-raised hover:border-line-strong hover:bg-elevated",
 };
 const barTone = {
@@ -115,7 +115,12 @@ const metaTone = {
 function BlockLabel({ b }: { b: Block }) {
   return (
     <span className="min-w-0 flex-1">
-      <span className="flex items-center gap-1.5 text-[12.5px] leading-4 font-medium text-fg">
+      <span
+        className={cn(
+          "flex items-center gap-1.5 text-[12.5px] leading-4 font-medium",
+          b.state === "muted" ? "text-fg-2" : "text-fg",
+        )}
+      >
         {b.state === "in" && (
           <Check
             aria-hidden

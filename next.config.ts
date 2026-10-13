@@ -5,9 +5,13 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   poweredByHeader: false,
   images: {
-    // Event photos are resized + transcoded by the Pexels CDN; see lib/image-loader.ts
-    loader: "custom",
-    loaderFile: "./lib/image-loader.ts",
+    // Event photos are fetched and transcoded server-side and served same-origin:
+    // AVIF/WebP at the exact width, long CDN cache, and no third-party cookies
+    // from the image host reaching visitors.
+    remotePatterns: [{ protocol: "https", hostname: "images.pexels.com", pathname: "/photos/**" }],
+    formats: ["image/avif", "image/webp"],
+    qualities: [60, 75],
+    minimumCacheTTL: 2678400,
     deviceSizes: [390, 640, 828, 1080, 1280, 1600],
     imageSizes: [96, 160, 256, 384, 480],
   },

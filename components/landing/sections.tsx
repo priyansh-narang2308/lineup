@@ -431,7 +431,7 @@ export function ByDay({ data }: { data: EventsPayload }) {
               >
                 {cover && (
                   <Image
-                    src={eventImage(cover.cover_image_url, "4:5")}
+                    src={eventImage(cover.cover_image_url)}
                     alt=""
                     fill
                     sizes="(min-width: 768px) 32vw, 92vw"

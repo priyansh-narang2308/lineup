@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Lineup design tokens — mirrors Figma "Color / Dark", "Spacing & Radius" and text styles. */
+
 @theme {
   --color-canvas: #0a0a0c;
   --color-surface: #0f0f12;

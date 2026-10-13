@@ -265,7 +265,7 @@ function HeroPreview({ events }: { events: ListedEvent[] }) {
                         ? "border-dashed border-clash bg-clash-subtle"
                         : "border-line bg-raised"),
                     b.kind === "default" && "border-line bg-raised",
-                    b.kind === "muted" && "border-line bg-raised opacity-45",
+                    b.kind === "muted" && "border-line-subtle bg-surface",
                   )}
                   style={{
                     top: 40 + b.lane * LANE,
@@ -284,7 +284,12 @@ function HeroPreview({ events }: { events: ListedEvent[] }) {
                     )}
                   />
                   <span className="min-w-0">
-                    <span className="block truncate text-[12px] font-medium text-fg">
+                    <span
+                      className={cn(
+                        "block truncate text-[12px] font-medium",
+                        b.kind === "muted" ? "text-fg-2" : "text-fg",
+                      )}
+                    >
                       {b.continues
                         ? `${b.e.name.split(":")[0]} · ${b.continues}`
                         : b.e.name}

@@ -12,7 +12,8 @@ const display = Bricolage_Grotesque({
 const sans = Geist({
   variable: "--font-geist",
   subsets: ["latin"],
-  display: "swap",
+  // optional: no late font swap repaint, so body text never re-triggers LCP.
+  display: "optional",
 });
 
 const mono = Geist_Mono({
@@ -23,7 +24,8 @@ const mono = Geist_Mono({
   preload: false,
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://lineup-render72.vercel.app";
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://lineup-render72.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -48,11 +50,14 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${display.variable} ${sans.variable} ${mono.variable} antialiased`}>
+    <html
+      lang="en"
+      className={`${display.variable} ${sans.variable} ${mono.variable} antialiased`}
+    >
       <body>
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-on-accent"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-100 focus:rounded-full focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-on-accent"
         >
           Skip to content
         </a>

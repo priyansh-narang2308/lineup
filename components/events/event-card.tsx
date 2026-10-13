@@ -70,6 +70,7 @@ export function EventCard({
             alt={e.cover_image_alt || ""}
             fill
             sizes={sizes}
+            quality={60}
             preload={imagePriority}
             loading={imagePriority ? undefined : "lazy"}
             className={cn(

@@ -443,7 +443,7 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
                         squad={squad}
                         onOpen={() => openEvent(e.id)}
                         onIntent={() => prefetchEventDetail(e.id)}
-                        imagePriority={gi === 0 && i < 3}
+                        imagePriority={gi === 0 && i === 0}
                         {...cardProps(e)}
                       />
                     </li>
