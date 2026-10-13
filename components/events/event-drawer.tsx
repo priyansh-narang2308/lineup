@@ -245,7 +245,7 @@ export function EventDrawer({
               <p className="text-[15px] leading-6 text-fg-2">{e.blurb}</p>
             </div>
 
-            {clashes.length > 0 && !inLineup && (
+            {clashes.length > 0 && (
               <div
                 role="note"
                 className="flex gap-3 rounded-xl border border-clash/40 bg-clash-subtle/70 p-3.5"

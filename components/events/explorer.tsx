@@ -180,10 +180,10 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
   );
   const clashMap = useMemo(() => {
     const m = new Map<string, Clash[]>();
-    for (const e of events)
-      if (!lineupIds.has(e.id)) m.set(e.id, clashesWith(e, lineupEvents));
+    // For lineup events this lists conflicts with the rest of the lineup.
+    for (const e of events) m.set(e.id, clashesWith(e, lineupEvents));
     return m;
-  }, [events, lineupEvents, lineupIds]);
+  }, [events, lineupEvents]);
 
   const shared = useMemo(() => {
     const decoded = decodeLineup(
@@ -233,14 +233,16 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
             ? ("muted" as const)
             : ("default" as const),
       clashText: clashes.length
-        ? `Overlaps ${clashes[0].with.name.split(":")[0]} for ${formatDuration(clashes[0].minutes)}${clashes.length > 1 ? ` · +${clashes.length - 1} more` : ""}`
+        ? `${inLineup ? "In lineup · overlaps" : "Overlaps"} ${clashes[0].with.name.split(":")[0]} for ${formatDuration(clashes[0].minutes)}${clashes.length > 1 ? ` · +${clashes.length - 1} more` : ""}`
         : undefined,
       action: (
         <LineupToggle
           id={e.id}
           name={e.name}
           clashLabel={
-            clashes.length ? `clashes with ${clashes.length}` : undefined
+            clashes.length && !inLineup
+              ? `clashes with ${clashes.length}`
+              : undefined
           }
           unavailableLabel={
             avail !== "open"

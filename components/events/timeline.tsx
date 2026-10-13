@@ -45,6 +45,7 @@ function blocksForDay(
     const idx = sessions.findIndex((s) => s.event_date === day);
     if (idx < 0) continue;
     const s = sessions[idx];
+    const endLabel = s.end_time === "23:59" ? "24:00" : s.end_time;
     const start = istToEpochMin(day, s.start_time);
     const end = istToEpochMin(
       day,
@@ -78,14 +79,14 @@ function blocksForDay(
             ? "muted"
             : "default",
       meta: inLineup
-        ? `${s.start_time}–${s.end_time} · in lineup`
+        ? `${s.start_time}–${endLabel} · in lineup${clashes.length ? ` · clashes ${formatDuration(clashes.reduce((t, c) => t + c.minutes, 0))}` : ""}`
         : clashes.length
-          ? `${s.start_time}–${s.end_time} · clashes ${formatDuration(clashes.reduce((t, c) => t + c.minutes, 0))}`
+          ? `${s.start_time}–${endLabel} · clashes ${formatDuration(clashes.reduce((t, c) => t + c.minutes, 0))}`
           : unavailable
             ? availability(e) === "sold_out"
               ? "Sold out"
               : "Registration closed"
-            : `${s.start_time}–${s.end_time}`,
+            : `${s.start_time}–${endLabel}`,
     });
   }
   return out.sort((a, b) => a.start - b.start);

@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useLineupState } from "@/lib/lineup/store";
 import { cn } from "@/lib/cn";
 
-/** Nav pill: links to the events page with the lineup panel open. */
 export function LineupCount({ compact = false }: { compact?: boolean }) {
   const { ids } = useLineupState();
   const n = ids.length;

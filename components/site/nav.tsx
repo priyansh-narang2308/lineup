@@ -12,15 +12,22 @@ const links = [
 
 export function Nav({ current }: { current?: "home" | "events" }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-line-subtle bg-canvas/75 backdrop-blur-xl supports-[backdrop-filter]:bg-canvas/65">
-      <nav aria-label="Primary" className="container-page flex h-16 items-center justify-between gap-4">
+    <header className="sticky top-0 z-40 border-b border-line-subtle bg-canvas/75 backdrop-blur-xl supports-backdrop-filter:bg-canvas/65">
+      <nav
+        aria-label="Primary"
+        className="container-page flex h-16 items-center justify-between gap-4"
+      >
         <Logo />
         <ul className="hidden items-center gap-1 md:flex">
           {links.map((l) => (
             <li key={l.href}>
               <Link
                 href={l.href}
-                aria-current={current === "events" && l.href === "/events" ? "page" : undefined}
+                aria-current={
+                  current === "events" && l.href === "/events"
+                    ? "page"
+                    : undefined
+                }
                 className="rounded-full px-3.5 py-2 text-[14px] font-medium text-fg-2 transition-colors hover:text-fg aria-[current=page]:text-fg"
               >
                 {l.label}
@@ -32,7 +39,11 @@ export function Nav({ current }: { current?: "home" | "events" }) {
           <LineupCount />
           {current !== "events" && (
             <span className="hidden sm:contents">
-              <ButtonLink href="/events" size="sm" iconRight={<ArrowRight aria-hidden className="size-4" />}>
+              <ButtonLink
+                href="/events"
+                size="sm"
+                iconRight={<ArrowRight aria-hidden className="size-4" />}
+              >
                 Browse events
               </ButtonLink>
             </span>

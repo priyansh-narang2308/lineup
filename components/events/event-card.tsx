@@ -129,7 +129,7 @@ export function EventCard({
             {teamLabel(e)}
           </span>
         </div>
-        {state === "clash" && clashText && (
+        {(state === "clash" || state === "in") && clashText && (
           <p className="relative z-[2] flex items-center gap-2 rounded-[10px] bg-clash-subtle px-2.5 py-2 text-[12px] font-medium text-clash">
             <Zap aria-hidden className="size-3.5 shrink-0" />
             {clashText}
