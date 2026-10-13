@@ -5,7 +5,7 @@ import { Clock3, Users, Zap } from "lucide-react";
 import type { ListedEvent } from "@/lib/events/schema";
 import { modeLabel, priceFor, teamLabel, type Squad } from "@/lib/events/derive";
 import { dateLabel, statusBadge, timeRange } from "@/lib/events/format";
-import { eventImage } from "@/lib/image-loader";
+import { eventImage } from "@/lib/event-image";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/cn";
 
