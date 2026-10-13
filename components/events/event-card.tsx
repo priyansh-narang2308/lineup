@@ -76,6 +76,7 @@ export function EventCard({
             sizes={sizes}
             quality={60}
             priority={Boolean(imagePriority)}
+            fetchPriority={imagePriority ? "high" : "auto"}
             loading={imagePriority ? undefined : "lazy"}
             className={cn(
               "object-cover transition-transform duration-700 ease-[var(--ease-out)] group-hover:scale-[1.03]",
@@ -162,9 +163,13 @@ export function EventCard({
 function dayBadge(e: ListedEvent, day: string | null): string {
   const sessions = sessionsFor(e);
   const idx = day ? sessions.findIndex((s) => s.event_date === day) : -1;
-  if (idx <= 0 || sessions.length < 2) return idx === 0 && sessions.length > 1 ? `${formatDay(day!)} · day 1 of ${sessions.length}` : dateLabel(e);
+  if (idx <= 0 || sessions.length < 2)
+    return idx === 0 && sessions.length > 1
+      ? `${formatDay(day!)} · day 1 of ${sessions.length}`
+      : dateLabel(e);
   const prev = sessions[idx - 1];
-  const overnight = sessions[idx].start_time === "00:00" && prev.end_time === "23:59";
+  const overnight =
+    sessions[idx].start_time === "00:00" && prev.end_time === "23:59";
   return `${formatDay(day!)} · ${overnight ? `overnight from ${weekdayShort(prev.event_date)}` : `day ${idx + 1} of ${sessions.length}`}`;
 }
 

@@ -14,7 +14,6 @@ import {
 import { formatINR } from "@/lib/events/derive";
 import { ButtonLink } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
-import { Reveal } from "@/components/motion/reveal";
 
 export function Hero({ data }: { data: EventsPayload | null }) {
   const events = data?.events ?? [];
@@ -179,7 +178,7 @@ function HeroPreview({ events }: { events: ListedEvent[] }) {
 
   return (
     <div className="container-page relative mt-14 sm:mt-16">
-      <Reveal delay={0.16} y={24} className="relative mx-auto max-w-295">
+      <div className="relative mx-auto max-w-295 animate-rise [animation-delay:180ms]">
         <div
           className="relative overflow-hidden rounded-[20px] border border-line bg-surface shadow-(--shadow-overlay)"
           role="img"
@@ -225,7 +224,7 @@ function HeroPreview({ events }: { events: ListedEvent[] }) {
 
           <div className="relative overflow-hidden mask-[linear-gradient(to_right,black_80%,transparent)] md:mask-none">
             <div
-              className="relative min-w-[880px] px-5"
+              className="relative min-w-220 px-5"
               style={{ height: 48 + laneCount * LANE }}
             >
               {Array.from({ length: hours + 1 }, (_, i) => (
@@ -249,7 +248,7 @@ function HeroPreview({ events }: { events: ListedEvent[] }) {
                 <div
                   key={b.e.id}
                   className={cn(
-                    "absolute flex h-[54px] items-center gap-2.5 overflow-hidden rounded-[10px] border py-1 pl-1 pr-2.5 text-left",
+                    "absolute flex h-13.5 items-center gap-2.5 overflow-hidden rounded-[10px] border py-1 pl-1 pr-2.5 text-left",
                     b.kind === "in" && "border-accent bg-accent-subtle",
                     b.kind === "clash" &&
                       (focus?.b === b
@@ -266,7 +265,7 @@ function HeroPreview({ events }: { events: ListedEvent[] }) {
                 >
                   <span
                     className={cn(
-                      "h-full w-[3px] shrink-0 rounded-full",
+                      "h-full w-0.75 shrink-0 rounded-full",
                       b.kind === "in"
                         ? "bg-accent"
                         : b.kind === "clash"
@@ -300,31 +299,10 @@ function HeroPreview({ events }: { events: ListedEvent[] }) {
                   </span>
                 </div>
               ))}
-              {focus && (
-                <div
-                  className="absolute z-10 hidden items-center gap-2.5 rounded-xl border border-line-strong bg-elevated px-3.5 py-2.5 shadow-[var(--shadow-overlay)] lg:flex"
-                  style={{
-                    top: 40 + focus.b.lane * LANE + 8,
-                    left: `calc(20px + (100% - 40px) * ${pct(focus.b.end) / 100} + 12px)`,
-                  }}
-                >
-                  <span className="text-[12px] font-medium text-clash">
-                    Clashes with {focus.c.length}
-                  </span>
-                  <span className="text-[12px] text-fg-2">
-                    {focus.c
-                      .map(
-                        (c) =>
-                          `${c.with.name.split(":")[0]} · ${formatDuration(c.minutes)}`,
-                      )
-                      .join("   ")}
-                  </span>
-                </div>
-              )}
             </div>
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-surface"
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-linear-to-b from-transparent to-surface"
             />
           </div>
         </div>
@@ -332,7 +310,7 @@ function HeroPreview({ events }: { events: ListedEvent[] }) {
         {picks.length === 2 && (
           <aside
             aria-label="Example lineup summary"
-            className="absolute -right-6 top-[140px] hidden w-[340px] rounded-[18px] border border-line-strong bg-raised p-4 text-left shadow-[var(--shadow-overlay)] xl:block"
+            className="absolute -right-6 top-35 hidden w-85 rounded-[18px] border border-line-strong bg-raised p-4 text-left shadow-(--shadow-overlay) xl:block"
           >
             <div className="flex items-center justify-between">
               <p className="text-[17px] font-semibold tracking-[-0.01em]">
@@ -384,7 +362,7 @@ function HeroPreview({ events }: { events: ListedEvent[] }) {
           At peak, {peak.count} events run at the same time on{" "}
           {weekdayLong(day)}.
         </p>
-      </Reveal>
+      </div>
     </div>
   );
 }

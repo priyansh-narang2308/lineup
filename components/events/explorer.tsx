@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-location-assign-relative-destination */
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
@@ -27,15 +28,26 @@ import {
 import { festDays } from "@/lib/events/insights";
 import { formatDayMonth, formatDuration, weekdayLong } from "@/lib/events/time";
 import { decodeLineup, lineup, useLineupState } from "@/lib/lineup/store";
+import dynamic from "next/dynamic";
 import { EventCard, EventCardSkeleton } from "./event-card";
-import { EventDrawer } from "./event-drawer";
 import { FilterBar, ViewSwitch } from "./filters";
 import { StaleBanner, StatePanel } from "./states";
-import { TimelineView } from "./timeline";
 import { LineupToggle } from "@/components/lineup/lineup-toggle";
-import { LineupPanel } from "@/components/lineup/lineup-panel";
 import { Button } from "@/components/ui/button";
 import { availabilityLabel } from "@/lib/events/format";
+
+const EventDrawer = dynamic(
+  () => import("./event-drawer").then((m) => m.EventDrawer),
+  { ssr: false },
+);
+const TimelineView = dynamic(
+  () => import("./timeline").then((m) => m.TimelineView),
+  { ssr: true },
+);
+const LineupPanel = dynamic(
+  () => import("@/components/lineup/lineup-panel").then((m) => m.LineupPanel),
+  { ssr: false },
+);
 
 type Phase = "loading" | "ready" | "error";
 type Source = {
@@ -518,14 +530,16 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
           onClose={closeEvent}
         />
       )}
-      <LineupPanel
-        events={lineupEvents}
-        missing={missing}
-        squad={squad}
-        open={panelOpen}
-        onOpenChange={setPanelOpen}
-        onOpenEvent={openEvent}
-      />
+      {panelOpen && (
+        <LineupPanel
+          events={lineupEvents}
+          missing={missing}
+          squad={squad}
+          open={panelOpen}
+          onOpenChange={setPanelOpen}
+          onOpenEvent={openEvent}
+        />
+      )}
     </div>
   );
 }
