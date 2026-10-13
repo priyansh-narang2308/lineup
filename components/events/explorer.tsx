@@ -121,13 +121,28 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
 
   // Revalidate the snapshot once on load (or load from scratch); retry when connectivity returns.
   useEffect(() => {
-    load(!!sim);
+    if (sim) {
+      load(true);
+      return;
+    }
+    const timer =
+      typeof window !== "undefined" && "requestIdleCallback" in window
+        ? window.requestIdleCallback(() => load(false), { timeout: 2500 })
+        : setTimeout(() => load(false), 500);
+
     const onOnline = () => {
       setRetrying(true);
-      load(!!sim);
+      load(false);
     };
     window.addEventListener("online", onOnline);
-    return () => window.removeEventListener("online", onOnline);
+    return () => {
+      if (typeof window !== "undefined" && "cancelIdleCallback" in window) {
+        window.cancelIdleCallback(timer as number);
+      } else {
+        clearTimeout(timer as number);
+      }
+      window.removeEventListener("online", onOnline);
+    };
   }, [load, sim]);
 
   const setFilters = useCallback(
@@ -209,7 +224,10 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
     () => sortEvents(applyFilters(events, filters, squad), filters.sort, squad),
     [events, filters, squad],
   );
-  const grouped = useMemo(() => groupByDay(results, filters.day), [results, filters.day]);
+  const grouped = useMemo(
+    () => groupByDay(results, filters.day),
+    [results, filters.day],
+  );
   const upcomingCount = events.filter(
     (e) => e.event_status === "ACTIVE",
   ).length;
@@ -426,7 +444,11 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
               <section
                 key={day}
                 aria-labelledby={`day-${day}`}
-                className="flex flex-col gap-5 [content-visibility:auto] [contain-intrinsic-size:auto_900px]"
+                className={
+                  gi > 0
+                    ? "flex flex-col gap-5 [content-visibility:auto] [contain-intrinsic-size:auto_900px]"
+                    : "flex flex-col gap-5"
+                }
               >
                 <h2 id={`day-${day}`} className="flex items-baseline gap-3">
                   <span className="text-heading-l">{weekdayLong(day)}</span>

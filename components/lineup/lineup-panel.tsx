@@ -143,12 +143,19 @@ export function LineupPanel({
 
   return (
     <>
-      {n > 0 && !open && (
-        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+      {n > 0 && (
+        <div className={cn(
+          "pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom)] transition-all duration-400 ease-out",
+          open ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
+        )}>
           <button
             type="button"
             onClick={() => onOpenChange(true)}
-            className="pointer-events-auto flex w-full max-w-130 items-center gap-3 rounded-full border border-line-strong bg-elevated/90 py-2 pl-2 pr-4 text-left shadow-(--shadow-overlay) backdrop-blur-xl transition-transform hover:-translate-y-0.5 animate-rise"
+            disabled={open}
+            className={cn(
+              "pointer-events-auto flex w-full max-w-130 items-center gap-3 rounded-full border border-line-strong bg-elevated/90 py-2 pl-2 pr-4 text-left shadow-(--shadow-overlay) backdrop-blur-xl transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg animate-rise",
+              open && "pointer-events-none opacity-0"
+            )}
             aria-label={`Open your lineup: ${n} events${conflicts.length ? `, ${conflicts.length} clashes` : ""}`}
           >
             <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-accent px-2 font-mono text-[14px] font-medium text-on-accent">
@@ -330,7 +337,7 @@ export function LineupPanel({
                           type="button"
                           onClick={() => lineup.remove(e.id)}
                           aria-label={`Remove ${e.name}`}
-                          className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-fg-3 hover:bg-hover hover:text-fg"
+                          className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-fg-3 transition-all duration-200 hover:bg-hover hover:text-fg active:scale-95"
                         >
                           <X aria-hidden className="size-4" />
                         </button>

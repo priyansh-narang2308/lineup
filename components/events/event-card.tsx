@@ -75,7 +75,7 @@ export function EventCard({
             fill
             sizes={sizes}
             quality={60}
-            preload={imagePriority}
+            priority={Boolean(imagePriority)}
             loading={imagePriority ? undefined : "lazy"}
             className={cn(
               "object-cover transition-transform duration-700 ease-[var(--ease-out)] group-hover:scale-[1.03]",
