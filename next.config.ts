@@ -4,6 +4,10 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  experimental: {
+    // Removes the render-blocking stylesheet request (PageSpeed: ~250 ms of LCP on mobile).
+    inlineCss: true,
+  },
   images: {
     // Event photos are fetched and transcoded server-side and served same-origin:
     // AVIF/WebP at the exact width, long CDN cache, and no third-party cookies
