@@ -287,18 +287,6 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
   };
 
   const drawerSummary = drawerId ? (byId.get(drawerId) ?? null) : null;
-  const [currentDrawerId, setCurrentDrawerId] = useState<string | null>(
-    drawerId,
-  );
-  const [currentDrawerSummary, setCurrentDrawerSummary] =
-    useState<ListedEvent | null>(drawerSummary);
-
-  useEffect(() => {
-    if (drawerId) {
-      setCurrentDrawerId(drawerId);
-      setCurrentDrawerSummary(drawerSummary);
-    }
-  }, [drawerId, drawerSummary]);
 
   return (
     <div className="container-page pb-32">
@@ -531,14 +519,13 @@ export function EventsExplorer({ initial }: { initial: EventsPayload | null }) {
         )}
       </div>
 
-      {currentDrawerId && (
+      {drawerId && (
         <EventDrawer
-          key={currentDrawerId}
           id={drawerId}
-          summary={drawerSummary ?? currentDrawerSummary}
+          summary={drawerSummary}
           squad={squad as Squad | null}
-          clashes={drawerId ? (clashMap.get(drawerId) ?? []) : []}
-          inLineup={drawerId ? lineupIds.has(drawerId) : false}
+          clashes={clashMap.get(drawerId) ?? []}
+          inLineup={lineupIds.has(drawerId)}
           onClose={closeEvent}
         />
       )}

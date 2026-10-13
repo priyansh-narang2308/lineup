@@ -200,12 +200,14 @@
       animation-name: sheet-in-right;
       animation-duration: 500ms;
       animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+      animation-fill-mode: both;
     }
 
     .sheet-content[data-state="closed"] {
       animation-name: sheet-out-right;
       animation-duration: 400ms;
       animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+      animation-fill-mode: both;
     }
   }
 
