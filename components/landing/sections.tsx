@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -307,7 +308,12 @@ export function Featured({ data }: { data: EventsPayload }) {
               <EventCard
                 event={e}
                 href={`/events?e=${e.id}`}
-                action={<LineupToggle id={e.id} name={e.name} />}
+                action={
+                  // Own Suspense boundary: hydrates as a separate short task (lower TBT).
+                  <Suspense fallback={null}>
+                    <LineupToggle id={e.id} name={e.name} />
+                  </Suspense>
+                }
               />
             </div>
           </StaggerItem>
@@ -371,11 +377,13 @@ export function ClosingSoon({
                   </span>
                 </span>
                 <span className="hidden rounded-full bg-warn-subtle px-2.5 py-0.5 text-[12px] font-medium text-warn sm:inline">
-                  <RelativeDeadline
-                    epochMs={deadline.epochMs}
-                    fallback={`Closes ${deadline.time}`}
-                    prefix="closes "
-                  />
+                  <Suspense fallback={`Closes ${deadline.time}`}>
+                    <RelativeDeadline
+                      epochMs={deadline.epochMs}
+                      fallback={`Closes ${deadline.time}`}
+                      prefix="closes "
+                    />
+                  </Suspense>
                 </span>
                 <ArrowUpRight
                   aria-hidden

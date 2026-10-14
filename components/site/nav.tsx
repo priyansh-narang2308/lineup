@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Logo } from "./logo";
@@ -36,7 +37,9 @@ export function Nav({ current }: { current?: "home" | "events" }) {
           ))}
         </ul>
         <div className="flex items-center gap-2.5">
-          <LineupCount />
+          <Suspense fallback={null}>
+            <LineupCount />
+          </Suspense>
           {current !== "events" && (
             <span className="hidden sm:contents">
               <ButtonLink prefetch={false}
